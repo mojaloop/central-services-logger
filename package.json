@@ -1,0 +1,60 @@
+{
+  "name": "central-services-logger",
+  "version": "8.1.0",
+  "description": "Mojaloop common logging library",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mojaloop/central-services-logger.git"
+  },
+  "author": "ModusBox",
+  "contributors": [
+    "Lazola Lucas <lazola.lucas@modusbox.com>",
+    "Georgi Georgiev <georgi.georgiev@modusbox.com>",
+    "Valentin Genev <valentin.genev@modusbox.com>",
+    "Miguel de Barros <miguel.debarros@modusbox.com>"
+  ],
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/mojaloop/central-services-logger/issues"
+  },
+  "homepage": "https://github.com/mojaloop/central-services-logger#readme",
+  "pre-commit": [
+    "standard",
+    "dep:check",
+    "test"
+  ],
+  "scripts": {
+    "test": "npm run test:unit | faucet",
+    "pretest": "standard",
+    "standard": "standard",
+    "test:unit": "tapes 'test/unit/**/**.test.js'",
+    "test:xunit": "npm run test:unit | tap-xunit",
+    "test:coverage": "nyc --reporter=lcov --reporter=text-summary tapes -- 'test/unit/**/**.test.js'",
+    "test:coverage-check": "npm run test:coverage && nyc check-coverage",
+    "audit:resolve": "SHELL=sh resolve-audit",
+    "audit:check": "SHELL=sh check-audit",
+    "dep:check": "npx ncu -e 2",
+    "dep:update": "npx ncu -u"
+  },
+  "dependencies": {
+    "winston": "3.2.1"
+  },
+  "devDependencies": {
+    "faucet": "0.0.1",
+    "nyc": "14.1.1",
+    "pre-commit": "1.2.2",
+    "sinon": "7.4.2",
+    "tape": "4.11.0",
+    "tapes": "4.1.0",
+    "license-checker": "25.0.1",
+    "npm-audit-resolver": "1.5.0",
+    "npm-check-updates": "3.1.23"
+  },
+  "standard": {
+    "ignore": []
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
+}
