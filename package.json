@@ -1,6 +1,6 @@
 {
-  "name": "central-services-logger",
-  "version": "8.1.0",
+  "name": "@mojaloop/central-services-logger",
+  "version": "8.1.1",
   "description": "Mojaloop common logging library",
   "main": "src/index.js",
   "repository": {
