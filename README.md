@@ -13,7 +13,7 @@ Set the following environmental variable `LOG_LEVEL` to the desired log level (i
 To use the shared Logger class, you only need to require it in the file you want to perform logging in:
 
 ```javascript
-const Logger = require('@mojaloop/central-services-logger').Logger
+const Logger = require('@mojaloop/central-services-logger')
 ```
 
 Then you simply need to call the appropriate method for the logging level you desire:
