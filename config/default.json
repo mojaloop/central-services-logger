@@ -1,7 +1,7 @@
 {
   "LOG_LEVEL": "info",
   "LOG_FILTER": "",
-  "LOG_TRANSPORT": "file",
+  "LOG_TRANSPORT": "console",
   "TRANSPORT_FILE_OPTIONS": {
     "json": false,
     "timestamp": true,

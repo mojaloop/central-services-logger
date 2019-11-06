@@ -28,7 +28,8 @@
 
 'use strict'
 
-const { createLogger, { combine, timestamp, colorize, printf }, transports } = require('winston')
+const { createLogger, format, transports } = require('winston')
+const { combine, timestamp, colorize, printf } = format
 
 const { customLevels, level, logTransport, transportFileOptions } = require('./lib/config')
 
@@ -42,7 +43,7 @@ const customFormat = printf(({ level, message, timestamp }) => {
 
 let transport = new transports.Console()
 if (logTransport === 'file') {
-  transport new transports.File(transportFileOptions)
+  transport = new transports.File(transportFileOptions)
 }
 
 const Logger = createLogger({
