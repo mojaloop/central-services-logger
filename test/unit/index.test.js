@@ -6,6 +6,8 @@ const Winston = require('winston')
 const Proxyquire = require('proxyquire')
 const Logger = require('../../src/index')
 const { removeFromCache } = require('../util/index')
+const config = require('../../src/lib/config')
+
 
 Test('logger', function (loggerTest) {
   let sandbox
@@ -40,19 +42,19 @@ Test('logger', function (loggerTest) {
 
   loggerTest.test('log error level, when filtered out', function (assert) {
     // Arrange
-    process.env.LOG_FILTER = 'info, debug'
-    // Note: Remove lib/config.js from the require cache to the LOG_FILTER env variable gets reapplied
-    removeFromCache(['lib/config.js'])
-    const LoggerProxy = Proxyquire('../../src/index', {})
+    const customConfig = {
+      ...config,
+      customLevels: 'info, debug',
+    }
+    const LoggerProxy = Proxyquire('../../src/index', {
+      './lib/config': customConfig
+    })
 
     // Act
     LoggerProxy.error('test %s', 'me')
 
     // Assert
     assert.ok(Sinon.match('error', 'test me'))
-
-    delete process.env.LOG_FILTER
-    removeFromCache(['lib/config.js'])
     assert.end()
   })
 
