@@ -50,6 +50,10 @@ Test('config', (configTest) => {
     const customConfig = {
       ...config,
       logTransport: 'file',
+      transportFileOptions: {
+        ...config.transportFileOptions,
+        filename: ''
+      }
     }
 
     // Act
