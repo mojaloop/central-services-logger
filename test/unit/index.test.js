@@ -5,14 +5,7 @@ const Sinon = require('sinon')
 const Winston = require('winston')
 const Proxyquire = require('proxyquire')
 const Logger = require('../../src/index')
-
-const removeFromCache = (pathFragments) => {
-  pathFragments.forEach(pathFragment => {
-    Object.keys(require.cache)
-      .filter(k => k.indexOf(pathFragment) > -1)
-      .forEach(k => delete require.cache[k])
-  })
-}
+const { removeFromCache } = require('../util/index')
 
 Test('logger', function (loggerTest) {
   let sandbox
@@ -84,11 +77,6 @@ Test('logger', function (loggerTest) {
     assert.ok(Sinon.match('error', errorMessage))
     assert.end()
   })
-
-  // Tests TODO:
-  // Fails to init when LOG_TRANSPORT=file, but filename isn't set
-  // logs to console when LOG_TRANSPORT=console
-  // logs to file when LOG_TRANSPORT=file
 
   loggerTest.end()
 })
