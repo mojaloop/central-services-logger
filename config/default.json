@@ -7,6 +7,6 @@
     "timestamp": true,
     "prettyPrint": true,
     "colorize": true,
-    "filename": "default.log"
+    "filename": "logs/combined.log"
   }
 }
