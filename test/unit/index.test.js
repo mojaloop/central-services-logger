@@ -5,9 +5,7 @@ const Sinon = require('sinon')
 const Winston = require('winston')
 const Proxyquire = require('proxyquire')
 const Logger = require('../../src/index')
-const { removeFromCache } = require('../util/index')
 const config = require('../../src/lib/config')
-
 
 Test('logger', function (loggerTest) {
   let sandbox
@@ -44,7 +42,7 @@ Test('logger', function (loggerTest) {
     // Arrange
     const customConfig = {
       ...config,
-      customLevels: 'info, debug',
+      customLevels: 'info, debug'
     }
     const LoggerProxy = Proxyquire('../../src/index', {
       './lib/config': customConfig

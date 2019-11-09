@@ -3,20 +3,15 @@
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Proxyquire = require('proxyquire')
-const { transports } = require('winston')
 
-const { removeFromCache } = require('../../util/index')
 const config = require('../../../src/lib/config')
 
-
-let sandbox = Sinon.createSandbox()
+const sandbox = Sinon.createSandbox()
 Test('config', (configTest) => {
-
   configTest.afterEach(t => {
     delete process.env.LOG_LEVEL
     delete process.env.LOG_FILTER
     sandbox.restore()
-
 
     t.end()
   })
@@ -58,7 +53,7 @@ Test('config', (configTest) => {
 
     // Act
     try {
-      const LoggerProxy = Proxyquire('../../../src/index', {
+      Proxyquire('../../../src/index', {
         './lib/config': customConfig
       })
       assert.fail('should have thrown error')
@@ -75,14 +70,14 @@ Test('config', (configTest) => {
     // Arrange
     const customConfig = {
       ...config,
-      logTransport: 'console',
+      logTransport: 'console'
     }
 
     // Act
     const LoggerProxy = Proxyquire('../../../src/index', {
       './lib/config': customConfig
     })
-    
+
     // Assert
     assert.equal(LoggerProxy.transports[0].name, 'console', 'Transport is console')
     assert.end()
@@ -98,7 +93,7 @@ Test('config', (configTest) => {
         filename: '/tmp/test'
       }
     }
-    
+
     // Act
     const LoggerProxy = Proxyquire('../../../src/index', {
       './lib/config': customConfig

@@ -14,7 +14,7 @@ Edit the file in `./config/default.json` to configure the logger, or set the fol
 | `CSL_LOG_LEVEL` | Sets the log level | `info` | `error`, `warn`, `audit`, `trace`, `info`, `perf`, `verbose`, `debug`, `silly` |
 | `LOG_FILTER` | _deprecated_ Use `CSL_LOG_FILTER` instead | `""` | e.g. `"error, trace, verbose" | 
 | `CSL_LOG_FILTER` | Applies a log filter. Specify a comma separated list of individual log levels to be included instead of specifying a `LOG_LEVEL` | `""` | e.g. `"error, trace, verbose" |
-| `CSL_LOG_TRANSPORT` | Selects the transport method. Either `console` or `file` | `console` | `console`, `file`
+| `CSL_LOG_TRANSPORT` | Selects the transport method. Either `console` or `file` | `file` | `console`, `file`
 | `CSL_TRANSPORT_FILE_OPTIONS` | _Optional._ Required if `LOG_TRANSPORT=file`. Configures the winston file transport | See `default.json` | See the [Winston Docs](https://github.com/winstonjs/winston#common-transport-options) |
 
 

@@ -2,7 +2,7 @@
 /**
  * Remove a certain module or path from node's module cache
  * Useful for testing changes in environment variables
- * @param {*} pathFragments 
+ * @param {*} pathFragments
  */
 const removeFromCache = (pathFragments) => {
   pathFragments.forEach(pathFragment => {
