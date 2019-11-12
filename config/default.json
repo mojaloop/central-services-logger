@@ -1,0 +1,12 @@
+{
+  "LOG_LEVEL": "info",
+  "LOG_FILTER": "",
+  "LOG_TRANSPORT": "log",
+  "TRANSPORT_FILE_OPTIONS": {
+    "json": false,
+    "timestamp": true,
+    "prettyPrint": true,
+    "colorize": true,
+    "filename": "logs/combined.log"
+  }
+}

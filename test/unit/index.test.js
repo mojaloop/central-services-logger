@@ -5,6 +5,7 @@ const Sinon = require('sinon')
 const Winston = require('winston')
 const Proxyquire = require('proxyquire')
 const Logger = require('../../src/index')
+const config = require('../../src/lib/config')
 
 Test('logger', function (loggerTest) {
   let sandbox
@@ -38,12 +39,20 @@ Test('logger', function (loggerTest) {
   })
 
   loggerTest.test('log error level, when filtered out', function (assert) {
-    const env = process.env
-    process.env.LOG_FILTER = 'info, debug'
-    const LoggerProxy = Proxyquire('../../src/index', {})
+    // Arrange
+    const customConfig = {
+      ...config,
+      customLevels: 'info, debug'
+    }
+    const LoggerProxy = Proxyquire('../../src/index', {
+      './lib/config': customConfig
+    })
+
+    // Act
     LoggerProxy.error('test %s', 'me')
+
+    // Assert
     assert.ok(Sinon.match('error', 'test me'))
-    process.env = env
     assert.end()
   })
 

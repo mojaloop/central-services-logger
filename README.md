@@ -4,7 +4,21 @@ Common shared Logging lib for Mojaloop components
 
 ## Configuration
 
-Set the following environmental variable `LOG_LEVEL` to the desired log level (i.e. `info`, `debug` etc. - _Note: This must be lower-case._)
+<!-- Set the following environment variable `LOG_LEVEL` to the desired log level (i.e. `info`, `debug` etc. - _Note: This must be lower-case._) -->
+
+Edit the file in `./config/default.json` to configure the logger, or set the following Environment variables:
+
+| Environment variable | Description | Default | Available Values |
+| --- | --- | --- | --- |
+| `LOG_LEVEL` | _deprecated_ Use `CSL_LOG_LEVEL` instead | `info` | `error`, `warn`, `audit`, `trace`, `info`, `perf`, `verbose`, `debug`, `silly` |
+| `CSL_LOG_LEVEL` | Sets the log level | `info` | `error`, `warn`, `audit`, `trace`, `info`, `perf`, `verbose`, `debug`, `silly` |
+| `LOG_FILTER` | _deprecated_ Use `CSL_LOG_FILTER` instead | `""` | e.g. `"error, trace, verbose" | 
+| `CSL_LOG_FILTER` | Applies a log filter. Specify a comma separated list of individual log levels to be included instead of specifying a `LOG_LEVEL` | `""` | e.g. `"error, trace, verbose" |
+| `CSL_LOG_TRANSPORT` | Selects the transport method. Either `console` or `file` | `file` | `console`, `file`
+| `CSL_TRANSPORT_FILE_OPTIONS` | _Optional._ Required if `LOG_TRANSPORT=file`. Configures the winston file transport | See `default.json` | See the [Winston Docs](https://github.com/winstonjs/winston#common-transport-options) |
+
+
+
 
 ## Usage
 
