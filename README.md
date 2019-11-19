@@ -1,4 +1,7 @@
 # central-services-logger
+[![Git Commit](https://img.shields.io/github/last-commit/mojaloop/central-services-logger.svg?style=flat)](https://github.com/mojaloop/central-services-logger/commits/master)
+[![Git Releases](https://img.shields.io/github/release/mojaloop/central-services-logger.svg?style=flat)](https://github.com/mojaloop/central-services-logger/releases)
+[![CircleCI](https://circleci.com/gh/mojaloop/central-services-logger.svg?style=svg)](https://circleci.com/gh/mojaloop/central-services-logger)
 
 Common shared Logging lib for Mojaloop components
 
