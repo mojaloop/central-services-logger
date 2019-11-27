@@ -1,6 +1,6 @@
 {
   "name": "@mojaloop/central-services-logger",
-  "version": "8.5.1",
+  "version": "8.5.2",
   "description": "Mojaloop common logging library",
   "main": "src/index.js",
   "repository": {
@@ -46,7 +46,7 @@
     "faucet": "0.0.1",
     "license-checker": "25.0.1",
     "npm-audit-resolver": "2.1.0",
-    "npm-check-updates": "3.2.1",
+    "npm-check-updates": "3.2.2",
     "nyc": "14.1.1",
     "pre-commit": "1.2.2",
     "proxyquire": "2.1.3",
