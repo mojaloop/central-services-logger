@@ -8,5 +8,17 @@
     "prettyPrint": true,
     "colorize": true,
     "filename": "logs/combined.log"
+  },
+  "INSTRUMENTATION": {
+    "METRICS": {
+      "DISABLED": false,
+      "labels": {
+        "fspId": "*"
+      },
+      "config": {
+        "timeout": 5000,
+        "prefix": "moja_csl_"
+      }
+    }
   }
 }
