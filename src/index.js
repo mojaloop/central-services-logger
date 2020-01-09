@@ -33,7 +33,7 @@ const { combine, timestamp, colorize, printf } = format
 
 const { customLevels, level, logTransport, transportFileOptions } = require('./lib/config')
 
-const allLevels = { error: 0, warn: 1, audit: 2, trace: 3, info: 4, perf: 5, verbose: 6, debug: 7, silly: 8 }
+const allLevels = { error: 0, warn: 1, audit: 2, trace: 3, event: 4, info: 5, perf: 6, verbose: 7, debug: 8, silly: 9 }
 const customLevelsArr = customLevels.split(/ *, */) // extra white space before/after the comma is ignored
 const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !customLevelsArr.includes(key)) : []
 
@@ -55,7 +55,8 @@ const Logger = createLogger({
       colors: {
         audit: 'magenta',
         trace: 'white',
-        perf: 'green'
+        perf: 'green',
+        event: 'white'
       }
     }),
     customFormat
