@@ -31,7 +31,7 @@
 const { createLogger, format, transports } = require('winston')
 const { combine, timestamp, colorize, printf } = format
 
-const { customLevels, level, logTransport, transportFileOptions } = require('./lib/config')
+const { customLevels, level, logTransport, transportFileOptions, silent } = require('./lib/config')
 
 const allLevels = { error: 0, warn: 1, audit: 2, trace: 3, info: 4, perf: 5, verbose: 6, debug: 7, silly: 8 }
 const customLevelsArr = customLevels.split(/ *, */) // extra white space before/after the comma is ignored
@@ -41,9 +41,22 @@ const customFormat = printf(({ level, message, timestamp }) => {
   return `${timestamp} - ${level}: ${message}`
 })
 
-let transport = new transports.Console()
-if (logTransport === 'file') {
-  transport = new transports.File(transportFileOptions)
+const CustomTransports = require('./transports')
+let transport
+
+switch (logTransport) {
+  case 'metrics_console':
+    transport = new CustomTransports.MetricConsole()
+    break
+  case 'metrics_file':
+    transport = new CustomTransports.MetricFile(transportFileOptions)
+    break
+  case 'file':
+    transport = new transports.File(transportFileOptions)
+    break
+  default:
+    transport = new transports.Console()
+    break
 }
 
 const Logger = createLogger({
@@ -66,7 +79,8 @@ const Logger = createLogger({
   exceptionHandlers: [
     transport
   ],
-  exitOnError: false
+  exitOnError: false,
+  silent
 })
 
 // Modify Logger before export
