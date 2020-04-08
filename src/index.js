@@ -79,7 +79,7 @@ ignoredLevels.map(level => { Logger[level] = () => {} })
 //   Logger.info(`Notification:consumeMessage message: - ${JSON.stringify(message)}`)
 // so to optimize-out:
 //   Logger.isInfoEnabled && Logger.info(`Notification:consumeMessage message: - ${JSON.stringify(message)}`)
-Logger.isErrorEnabled = Logger.isLevelEnabled('warn')
+Logger.isErrorEnabled = Logger.isLevelEnabled('error')
 Logger.isWarnEnabled = Logger.isLevelEnabled('warn')
 Logger.isAuditEnabled = Logger.isLevelEnabled('audit')
 Logger.isTraceEnabled = Logger.isLevelEnabled('trace')
