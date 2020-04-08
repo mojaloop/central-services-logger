@@ -72,4 +72,21 @@ const Logger = createLogger({
 // Modify Logger before export
 ignoredLevels.map(level => { Logger[level] = () => {} })
 
+// Add "is<level>Enabled" flags
+// Those are used for optimimizing-out disabled logs sub-calls
+//
+// In this example, JSON.stringify() would get called even if "info" level is off.
+//   Logger.info(`Notification:consumeMessage message: - ${JSON.stringify(message)}`)
+// so to optimize-out:
+//   Logger.isInfoEnabled && Logger.info(`Notification:consumeMessage message: - ${JSON.stringify(message)}`)
+Logger.isErrorEnabled = Logger.isLevelEnabled('warn')
+Logger.isWarnEnabled = Logger.isLevelEnabled('warn')
+Logger.isAuditEnabled = Logger.isLevelEnabled('audit')
+Logger.isTraceEnabled = Logger.isLevelEnabled('trace')
+Logger.isInfoEnabled = Logger.isLevelEnabled('info')
+Logger.isPerfEnabled = Logger.isLevelEnabled('perf')
+Logger.isVerboseEnabled = Logger.isLevelEnabled('verbose')
+Logger.isDebugEnabled = Logger.isLevelEnabled('debug')
+Logger.isSillyEnabled = Logger.isLevelEnabled('silly')
+
 module.exports = Logger

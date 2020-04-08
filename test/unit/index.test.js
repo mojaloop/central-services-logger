@@ -11,14 +11,19 @@ Test('logger', function (loggerTest) {
   let sandbox
   let addMethod
   let logMethod
+  let isLevelEnabledMethod
 
   loggerTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
     sandbox.stub(Winston, 'createLogger')
     addMethod = Sinon.stub()
     logMethod = Sinon.stub()
+    isLevelEnabledMethod = Sinon.stub()
     addMethod.returns({ log: logMethod })
-    Winston.createLogger.returns({ add: addMethod })
+    Winston.createLogger.returns({
+      add: addMethod,
+      isLevelEnabled: isLevelEnabledMethod
+    })
     t.end()
   })
 
