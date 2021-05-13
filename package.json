@@ -1,6 +1,6 @@
 {
   "name": "@mojaloop/central-services-logger",
-  "version": "10.6.0",
+  "version": "10.6.1",
   "description": "Mojaloop common logging library",
   "main": "src/index.js",
   "repository": {
@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/mojaloop/central-services-logger#readme",
   "pre-commit": [
-    "standard",
+    "lint",
     "dep:check",
     "test"
   ],
@@ -28,6 +28,9 @@
     "test": "npm run test:unit | faucet",
     "pretest": "standard",
     "standard": "standard",
+    "standard:fix": "standard --fix",
+    "lint": "npm run standard",
+    "lint:fix": "npm run standard:fix",
     "test:unit": "tapes 'test/unit/**/**.test.js'",
     "test:xunit": "npm run test:unit | tap-xunit",
     "test:coverage": "nyc --reporter=lcov --reporter=text-summary tapes -- 'test/unit/**/**.test.js'",
@@ -45,14 +48,14 @@
   "devDependencies": {
     "faucet": "0.0.1",
     "license-checker": "25.0.1",
-    "npm-audit-resolver": "2.2.0",
-    "npm-check-updates": "7.0.1",
+    "npm-audit-resolver": "2.3.0",
+    "npm-check-updates": "11.5.11",
     "nyc": "15.1.0",
     "pre-commit": "1.2.2",
     "proxyquire": "2.1.3",
-    "sinon": "9.0.2",
-    "standard": "14.3.4",
-    "tape": "5.0.1",
+    "sinon": "10.0.0",
+    "standard": "16.0.3",
+    "tape": "5.2.2",
     "tapes": "4.1.0"
   },
   "standard": {
