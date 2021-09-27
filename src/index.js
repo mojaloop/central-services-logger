@@ -70,7 +70,7 @@ const Logger = createLogger({
 })
 
 // Modify Logger before export
-ignoredLevels.map(level => { Logger[level] = () => {} })
+ignoredLevels.forEach(level => { Logger[level] = () => {} })
 
 // Add "is<level>Enabled" flags
 // Those are used for optimimizing-out disabled logs sub-calls
