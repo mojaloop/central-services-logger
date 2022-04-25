@@ -91,8 +91,8 @@ jobs:
             - node_modules
 
   test-unit:
+    executor: default-docker
     <<: *defaults_working_directory
-    <<: *defaults_docker_node
     steps:
       - run:
           name: Install general dependencies
@@ -116,8 +116,8 @@ jobs:
           path: ./test/results
 
   test-coverage:
+    executor: default-docker
     <<: *defaults_working_directory
-    <<: *defaults_docker_node
     steps:
       - run:
           name: Install general dependencies
@@ -148,8 +148,8 @@ jobs:
             fi
 
   vulnerability-check:
+    executor: default-docker
     <<: *defaults_working_directory
-    <<: *defaults_docker_node
     steps:
       - run:
           name: Install general dependencies
@@ -168,8 +168,8 @@ jobs:
           prefix: audit
 
   audit-licenses:
+    executor: default-docker
     <<: *defaults_working_directory
-    <<: *defaults_docker_node
     steps:
       - run:
           name: Install general dependencies
@@ -187,8 +187,8 @@ jobs:
           prefix: licenses
 
   build-snapshot:
+    executor: default-docker
     <<: *defaults_working_directory
-    <<: *defaults_docker_node
     steps:
       - run:
           name: Install general dependencies
@@ -206,8 +206,8 @@ jobs:
           <<: *defaults_slack_announcement
 
   build:
+    executor: default-docker
     <<: *defaults_working_directory
-    <<: *defaults_docker_node
     steps:
       - run:
           name: Install general dependencies
