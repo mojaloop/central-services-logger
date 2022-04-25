@@ -4,10 +4,6 @@ version: 2.1
 defaults_working_directory: &defaults_working_directory
   working_directory: /home/circleci/project
 
-defaults_docker_node: &defaults_docker_node
-  docker:
-    - image: node:16.14.2-alpine
-
 defaults_Dependencies: &defaults_Dependencies |
     apk --no-cache add git
     apk --no-cache add ca-certificates
@@ -62,10 +58,25 @@ defaults_slack_announcement: &defaults_slack_announcement
       \"text\": \"*${CIRCLE_PROJECT_REPONAME}* - Release \`${CIRCLE_TAG}\`: https://github.com/mojaloop/${CIRCLE_PROJECT_REPONAME}/releases/tag/${CIRCLE_TAG}\"
     }"
 
+##
+# Executors
+#
+# CircleCI Executors
+##
+executors:
+  default-docker:
+    working_directory: /home/circleci/project
+    docker:
+      - image: node:12.16.1-alpine
+
+  default-machine:
+    machine:
+      image: ubuntu-1604:201903-01
+
 jobs:
   setup:
+    executor: default-docker
     <<: *defaults_working_directory
-    <<: *defaults_docker_node
     steps:
       - run:
           name: Install general dependencies
