@@ -1,9 +1,11 @@
 # CircleCI v2 Config
 version: 2.1
 
-defaults_working_directory: &defaults_working_directory
-  working_directory: /home/circleci/project
-
+##
+# defaults
+#
+# YAML defaults templates, in alphabetical order
+##
 defaults_Dependencies: &defaults_Dependencies |
     apk --no-cache add git
     apk --no-cache add ca-certificates
@@ -71,12 +73,11 @@ executors:
 
   default-machine:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:current
 
 jobs:
   setup:
     executor: default-docker
-    <<: *defaults_working_directory
     steps:
       - run:
           name: Install general dependencies
@@ -92,7 +93,6 @@ jobs:
 
   test-unit:
     executor: default-docker
-    <<: *defaults_working_directory
     steps:
       - run:
           name: Install general dependencies
@@ -117,7 +117,6 @@ jobs:
 
   test-coverage:
     executor: default-docker
-    <<: *defaults_working_directory
     steps:
       - run:
           name: Install general dependencies
@@ -149,7 +148,6 @@ jobs:
 
   vulnerability-check:
     executor: default-docker
-    <<: *defaults_working_directory
     steps:
       - run:
           name: Install general dependencies
@@ -169,7 +167,6 @@ jobs:
 
   audit-licenses:
     executor: default-docker
-    <<: *defaults_working_directory
     steps:
       - run:
           name: Install general dependencies
@@ -188,7 +185,6 @@ jobs:
 
   build-snapshot:
     executor: default-docker
-    <<: *defaults_working_directory
     steps:
       - run:
           name: Install general dependencies
@@ -207,7 +203,6 @@ jobs:
 
   build:
     executor: default-docker
-    <<: *defaults_working_directory
     steps:
       - run:
           name: Install general dependencies
