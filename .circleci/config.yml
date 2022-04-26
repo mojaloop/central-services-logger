@@ -27,9 +27,27 @@ defaults_Dependencies: &defaults_Dependencies |
     npm install -g node-gyp
 
 defaults_awsCliDependencies: &defaults_awsCliDependencies |
+    apk add --no-cache \
+      curl \
+      make \
+      cmake \
+      gcc \
+      libc-dev \
+      libffi-dev \
+      openssl-dev
+    apk --no-cache add gcompat
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
-    unzip /tmp/awscliv2.zip -d /tmp/aws
+    unzip /tmp/awscliv2.zip -d /tmp/
     sh /tmp/aws/install
+
+RUN apk add --no-cache \
+    curl \
+    make \
+    cmake \
+    gcc \
+    libc-dev \
+    libffi-dev \
+    openssl-dev \
 
 defaults_license_scanner: &defaults_license_scanner
   name: Install and set up license-scanner
