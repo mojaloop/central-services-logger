@@ -70,6 +70,14 @@ defaults_slack_announcement: &defaults_slack_announcement
       \"text\": \"*${CIRCLE_PROJECT_REPONAME}* - Release \`${CIRCLE_TAG}\`: https://github.com/mojaloop/${CIRCLE_PROJECT_REPONAME}/releases/tag/${CIRCLE_TAG}\"
     }"
 
+defaults_export_version_from_package: &defaults_export_version_from_package
+  # TODO: this is rather imperfect, but will do for now
+  name: Format the changelog into the github release body and get release tag
+  command: |
+    git diff --no-indent-heuristic master~1 HEAD CHANGELOG.md | sed -n '/^+[^+]/ s/^+//p' > /tmp/changes
+    echo 'export RELEASE_CHANGES=`cat /tmp/changes`' >> $BASH_ENV
+    echo 'export RELEASE_TAG=`cat package-lock.json | jq -r .version`' >> $BASH_ENV
+
 ##
 # Executors
 #
@@ -256,12 +264,7 @@ jobs:
             git fetch origin
             git checkout origin/${CIRCLE_BRANCH}
       - run:
-          # Note: this is rather imperfect, but will do for now
-          name: Format the changelog into the github release body and get release tag
-          command: |
-            git diff --no-indent-heuristic master~1 HEAD CHANGELOG.md | sed -n '/^+[^+]/ s/^+//p' > /tmp/changes
-            echo 'export RELEASE_CHANGES=`cat /tmp/changes`' >> $BASH_ENV
-            echo 'export RELEASE_TAG=`cat package-lock.json | jq -r .version`' >> $BASH_ENV
+          <<: *defaults_export_version_from_package
       - run:
           name: check the release changes
           command: |
@@ -291,8 +294,6 @@ jobs:
           <<: *defaults_npm_auth
       - run:
           <<: *defaults_npm_publish_release
-      # - run:
-      #     <<: *defaults_slack_announcement
 
 workflows:
   version: 2
