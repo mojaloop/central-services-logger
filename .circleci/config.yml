@@ -27,7 +27,7 @@ defaults_Dependencies: &defaults_Dependencies |
     npm install -g node-gyp
 
 defaults_awsCliDependencies: &defaults_awsCliDependencies |
-    apk --no-cache  add aws-cli
+    apk --no-cache add aws-cli
 
 defaults_license_scanner: &defaults_license_scanner
   name: Install and set up license-scanner
