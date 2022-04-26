@@ -40,15 +40,6 @@ defaults_awsCliDependencies: &defaults_awsCliDependencies |
     unzip /tmp/awscliv2.zip -d /tmp/
     sh /tmp/aws/install
 
-RUN apk add --no-cache \
-    curl \
-    make \
-    cmake \
-    gcc \
-    libc-dev \
-    libffi-dev \
-    openssl-dev \
-
 defaults_license_scanner: &defaults_license_scanner
   name: Install and set up license-scanner
   command: |
