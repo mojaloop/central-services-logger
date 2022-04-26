@@ -38,7 +38,8 @@
     "audit:resolve": "resolve-audit --production",
     "audit:check": "check-audit --production",
     "dep:check": "npx ncu -e 2",
-    "dep:update": "npx ncu -u"
+    "dep:update": "npx ncu -u",
+    "release": "standard-version --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'"
   },
   "dependencies": {
     "@types/node": "^17.0.27",
@@ -55,6 +56,7 @@
     "proxyquire": "2.1.3",
     "sinon": "13.0.2",
     "standard": "17.0.0",
+    "standard-version": "^9.3.2",
     "tap-spec": "^5.0.0",
     "tape": "5.5.3",
     "tapes": "4.1.0",
