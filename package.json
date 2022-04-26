@@ -37,8 +37,8 @@
     "test:coverage-check": "npm run test:coverage && nyc check-coverage",
     "audit:resolve": "resolve-audit --production",
     "audit:check": "check-audit --production",
-    "dep:check": "npx ncu -e 2",
-    "dep:update": "npx ncu -u",
+    "dep:check": "ncu -e 2",
+    "dep:update": "ncu -u",
     "release": "standard-version --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'"
   },
   "dependencies": {
