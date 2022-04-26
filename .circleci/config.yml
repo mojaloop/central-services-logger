@@ -26,6 +26,11 @@ defaults_Dependencies: &defaults_Dependencies |
     npm config set unsafe-perm true
     npm install -g node-gyp
 
+defaults_awsCliDependencies: &defaults_awsCliDependencies |
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
+    unzip /tmp/awscliv2.zip -d /tmp/aws
+    sh /tmp/aws/install
+
 defaults_license_scanner: &defaults_license_scanner
   name: Install and set up license-scanner
   command: |
@@ -144,20 +149,16 @@ jobs:
           prefix: test
       - store_test_results:
           path: coverage
-      # - aws-s3/copy:
-      #     arguments: '--dryrun'
-      #     from: coverage/lcov.info
-      #     to: $AWS_S3_DIR_SONARQUBE/${CIRCLE_PROJECT_REPONAME}/lcov.info
-      # - run:
-      #     name: Copy code coverage to SonarQube
-      #     command: |
-      #       if [ "${CIRCLE_BRANCH}" == "master" ];
-      #       then
-      #           echo "Sending lcov.info to SonarQube..."
-      #           aws s3 cp coverage/lcov.info $AWS_S3_DIR_SONARQUBE/${CIRCLE_PROJECT_REPONAME}/lcov.info
-      #       else
-      #           echo "Not a release (env CIRCLE_BRANCH != 'master'), skipping sending lcov.info to SonarQube."
-      #       fi
+      - run:
+          name: Copy code coverage to SonarQube
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ];
+            then
+                echo "Sending lcov.info to SonarQube..."
+                aws s3 cp coverage/lcov.info $AWS_S3_DIR_SONARQUBE/${CIRCLE_PROJECT_REPONAME}/lcov.info
+            else
+                echo "Not a release (env CIRCLE_BRANCH != 'master'), skipping sending lcov.info to SonarQube."
+            fi
 
   vulnerability-check:
     executor: default-docker
