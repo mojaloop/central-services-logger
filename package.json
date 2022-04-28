@@ -1,6 +1,6 @@
 {
   "name": "@mojaloop/central-services-logger",
-  "version": "10.6.1",
+  "version": "11.0.0",
   "description": "Mojaloop common logging library",
   "main": "src/index.js",
   "repository": {
@@ -72,7 +72,7 @@
   },
   "standard-version": {
     "scripts": {
-      "postchangelog": "replace '\\[mojaloop\/#(\\d+)\\]\\(https:\/\/github.com\/mojaloop\/(.*)\/issues\/(\\d+)\\)' '[mojaloop/#$1](https://github.com/mojaloop/project/issues/$1)' CHANGELOG.md"
+      "postchangelog": "replace '\\[mojaloop/#(\\d+)\\]\\(https://github.com/mojaloop/(.*)/issues/(\\d+)\\)' '[mojaloop/#$1](https://github.com/mojaloop/project/issues/$1)' CHANGELOG.md"
     }
   }
 }
