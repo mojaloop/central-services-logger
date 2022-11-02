@@ -92,6 +92,9 @@ childLogger.child({'context': {b:2}})
 
 will result in {'context': {b:2}}. As of 02/11/2022 there is no way to copy the
 metadata over or directly alter the metadata.
+This is a problem since `central-services-logger` formats log messages vs
+winston's default output which would be an exploded metadata object where you
+can just avoid overwriting key value pairs.
 
 A suggested library that can handle merging of the contexts would be https://www.npmjs.com/package/loglayer
 
