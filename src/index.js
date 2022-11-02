@@ -37,8 +37,14 @@ const allLevels = { error: 0, warn: 1, audit: 2, trace: 3, info: 4, perf: 5, ver
 const customLevelsArr = customLevels.split(/ *, */) // extra white space before/after the comma is ignored
 const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !customLevelsArr.includes(key)) : []
 
-const customFormat = printf(({ level, message, timestamp }) => {
-  return `${timestamp} - ${level}: ${message}`
+const customFormat = printf((info) => {
+  if (info.context && info.context instanceof Object) {
+    info.message = util.inspect({
+      ...info.context,
+      message: info.message
+    })
+  }
+  return `${info.timestamp} - ${info.level}: ${info.message}`
 })
 
 let transport = new transports.Console()

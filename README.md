@@ -15,7 +15,7 @@ Edit the file in `./config/default.json` to configure the logger, or set the fol
 | --- | --- | --- | --- |
 | `LOG_LEVEL` | Also `CSL_LOG_LEVEL` | `info` | `error`, `warn`, `audit`, `trace`, `info`, `perf`, `verbose`, `debug`, `silly` |
 | `CSL_LOG_LEVEL` | Sets the log level | `info` | `error`, `warn`, `audit`, `trace`, `info`, `perf`, `verbose`, `debug`, `silly` |
-| `LOG_FILTER` | Also `CSL_LOG_FILTER` | `""` | e.g. `"error, trace, verbose" | 
+| `LOG_FILTER` | Also `CSL_LOG_FILTER` | `""` | e.g. `"error, trace, verbose" |
 | `CSL_LOG_FILTER` | Applies a log filter. Specify a comma separated list of individual log levels to be included instead of specifying a `LOG_LEVEL` | `""` | e.g. `"error, trace, verbose" |
 | `CSL_LOG_TRANSPORT` | Selects the transport method. Either `console` or `file`. Uses the same transport for errors and standard logs | `console` | `console`, `file`
 | `CSL_TRANSPORT_FILE_OPTIONS` | _Optional._ Required if `LOG_TRANSPORT=file`. Configures the winston file transport | See `default.json` | See the [Winston Docs](https://github.com/winstonjs/winston#common-transport-options) |
@@ -69,6 +69,70 @@ npm run audit:check
 ```
 
 And commit the changed `audit-resolve.json` to ensure that CircleCI will build correctly.
+
+## Contextual Logging
+
+If you need contextual logging, an object can be passed using Logger.child({'context': {a:1}}).
+
+```bash
+Output: 2022-11-02T19:10:25.895Z - info: {
+  a: 1,
+  message: 'Message'
+}
+```
+
+Note however, winston (base logger library) does not merge child object metadata if chained together.
+
+i.e
+
+```javascript
+const childLogger = Logger.child({'context': {a:1}});
+childLogger.child({'context': {b:2}})
+```
+
+will result in {'context': {b:2}}. As of 02/11/2022 there is no way to copy the
+metadata over or directly alter the metadata.
+
+A suggested library that can handle merging of the contexts would be https://www.npmjs.com/package/loglayer
+
+```javascript
+const Logger = require('@mojaloop/central-services-logger');
+const { LogLayer, LoggerType } = require('loglayer');
+
+const wrappedLogger = new LogLayer({
+    logger: {
+        instance: Logger,
+        type: LoggerType.WINSTON,
+    },
+    context: {
+        // Be sure to specify 'context'
+        fieldName: 'context'
+    }
+}).withContext({
+    app: 'simulator'
+});
+
+wrappedLogger.withContext({
+    a: '1'
+}).info('Message');
+
+Output: 2022-11-02T19:10:25.895Z - info: {
+  app: 'simulator',
+  a: 1,
+  message: 'Message'
+}
+
+wrappedLogger.withContext({
+    b: '2'
+}).info('New message');
+
+Output: 2022-11-02T19:10:25.895Z - info: {
+  app: 'simulator',
+  a: 1,
+  b: 2,
+  message: 'New message'
+}
+```
 
 ## Automated Releases
 
