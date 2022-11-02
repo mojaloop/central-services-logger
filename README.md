@@ -75,7 +75,7 @@ And commit the changed `audit-resolve.json` to ensure that CircleCI will build c
 If you need contextual logging, an object can be passed using Logger.child({'context': {a:1}}).
 
 ```bash
-Output: 2022-11-02T19:10:25.895Z - info: {
+Output: timestamp - info: {
   a: 1,
   message: 'Message'
 }
@@ -116,7 +116,7 @@ wrappedLogger.withContext({
     a: '1'
 }).info('Message');
 
-Output: 2022-11-02T19:10:25.895Z - info: {
+Output: timestamp - info: {
   app: 'simulator',
   a: 1,
   message: 'Message'
@@ -126,12 +126,15 @@ wrappedLogger.withContext({
     b: '2'
 }).info('New message');
 
-Output: 2022-11-02T19:10:25.895Z - info: {
+Output: timestamp - info: {
   app: 'simulator',
   a: 1,
   b: 2,
   message: 'New message'
 }
+
+// The original logger can be accessed with
+wrappedLogger.getLoggerInstance()
 ```
 
 ## Automated Releases
