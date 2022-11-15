@@ -72,7 +72,7 @@ And commit the changed `audit-resolve.json` to ensure that CircleCI will build c
 
 ## Contextual Logging
 
-If you need contextual logging, an object can be passed using Logger.child({'context': {a:1}}).
+If you need contextual logging, an object can be passed using Logger.child({'context': {a:1}}).info("Message").
 
 ```bash
 Output: timestamp - info: {
@@ -90,55 +90,14 @@ const childLogger = Logger.child({'context': {a:1}});
 childLogger.child({'context': {b:2}})
 ```
 
-will result in {'context': {b:2}}. As of 02/11/2022 there is no way to copy the
+will result in {'context': {b:2}}. As of 15/11/2022 there is no way to copy the
 metadata over or directly alter the metadata.
 This is a problem since `central-services-logger` formats log messages vs
 winston's default output which would be an exploded metadata object where you
 can just avoid overwriting key value pairs.
 
-A suggested library that can handle merging of the contexts would be https://www.npmjs.com/package/loglayer
-
-```javascript
-const Logger = require('@mojaloop/central-services-logger');
-const { LogLayer, LoggerType } = require('loglayer');
-
-const wrappedLogger = new LogLayer({
-    logger: {
-        instance: Logger,
-        type: LoggerType.WINSTON,
-    },
-    context: {
-        // Be sure to specify 'context'
-        fieldName: 'context'
-    }
-}).withContext({
-    app: 'simulator'
-});
-
-wrappedLogger.withContext({
-    a: '1'
-}).info('Message');
-
-Output: timestamp - info: {
-  app: 'simulator',
-  a: 1,
-  message: 'Message'
-}
-
-wrappedLogger.withContext({
-    b: '2'
-}).info('New message');
-
-Output: timestamp - info: {
-  app: 'simulator',
-  a: 1,
-  b: 2,
-  message: 'New message'
-}
-
-// The original logger can be accessed with
-wrappedLogger.getLoggerInstance()
-```
+The managing of the context object you wish to log across the lifecycle of a
+request will need to be managed in your application.
 
 ## Automated Releases
 
