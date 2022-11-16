@@ -99,21 +99,18 @@ Test('contextual logger', function (loggerTest) {
     t.end()
   })
 
-  loggerTest.test('contextual logger formats with context properly', function (assert) {
+  loggerTest.test('logger with context formats message properly', function (assert) {
     const logger = Logger.child({ context: { a: 1 } })
     sandbox.spy(process.stdout, 'write')
-
     logger.info('Message')
-
     assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === '{ a: 1, message: \'Message\' }\n')
     assert.end()
   })
 
-  loggerTest.test('contextual logger formats without context properly', function (assert) {
+  loggerTest.test('logger without context formats message properly', function (assert) {
     const logger = Logger.child()
     sandbox.spy(process.stdout, 'write')
     logger.info('Message')
-
     assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === 'Message\n')
     assert.end()
   })
