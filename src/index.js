@@ -39,9 +39,7 @@ const customLevelsArr = customLevels.split(/ *, */) // extra white space before/
 const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !customLevelsArr.includes(key)) : []
 
 const customFormat = printf(({ level, message, timestamp, context }) => {
-  /* istanbul ignore next */
   if (context && context instanceof Object) {
-    /* istanbul ignore next */
     message = util.inspect({
       ...context,
       message
