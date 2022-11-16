@@ -72,7 +72,7 @@ And commit the changed `audit-resolve.json` to ensure that CircleCI will build c
 
 ## Contextual Logging
 
-If you need contextual logging, an object can be passed using Logger.child({'context': {a:1}}).info("Message").
+If you need contextual logging, an context object can be passed using Logger.child({'context': {a:1}}).info("Message").
 
 ```bash
 Output: timestamp - info: {
@@ -80,24 +80,6 @@ Output: timestamp - info: {
   message: 'Message'
 }
 ```
-
-Note however, winston (base logger library) does not merge child object metadata if chained together.
-
-i.e
-
-```javascript
-const childLogger = Logger.child({'context': {a:1}});
-childLogger.child({'context': {b:2}})
-```
-
-will result in {'context': {b:2}}. As of 15/11/2022 there is no way to copy the
-metadata over or directly alter the metadata.
-This is a problem since `central-services-logger` formats log messages vs
-winston's default output which would be an exploded metadata object where you
-can just avoid overwriting key value pairs.
-
-The managing of the context object you wish to log across the lifecycle of a
-request will need to be managed in your application.
 
 ## Automated Releases
 
