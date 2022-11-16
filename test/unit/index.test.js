@@ -91,6 +91,7 @@ Test('contextual logger', function (loggerTest) {
 
   loggerTest.beforeEach(t => {
     sandbox = Sinon.createSandbox()
+    sandbox.spy(process.stdout, 'write')
     t.end()
   })
 
@@ -101,7 +102,6 @@ Test('contextual logger', function (loggerTest) {
 
   loggerTest.test('logger with context formats message properly', function (assert) {
     const logger = Logger.child({ context: { a: 1 } })
-    sandbox.spy(process.stdout, 'write')
     logger.info('Message')
     assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === '{ a: 1, message: \'Message\' }\n')
     assert.end()
@@ -109,7 +109,6 @@ Test('contextual logger', function (loggerTest) {
 
   loggerTest.test('logger without context formats message properly', function (assert) {
     const logger = Logger.child()
-    sandbox.spy(process.stdout, 'write')
     logger.info('Message')
     assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === 'Message\n')
     assert.end()
