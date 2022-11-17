@@ -28,6 +28,7 @@
 
 'use strict'
 
+const util = require('util')
 const { createLogger, format, transports } = require('winston')
 const { combine, timestamp, colorize, printf } = format
 
@@ -37,7 +38,13 @@ const allLevels = { error: 0, warn: 1, audit: 2, trace: 3, info: 4, perf: 5, ver
 const customLevelsArr = customLevels.split(/ *, */) // extra white space before/after the comma is ignored
 const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !customLevelsArr.includes(key)) : []
 
-const customFormat = printf(({ level, message, timestamp }) => {
+const customFormat = printf(({ level, message, timestamp, context }) => {
+  if (context && context instanceof Object) {
+    message = util.inspect({
+      ...context,
+      message
+    })
+  }
   return `${timestamp} - ${level}: ${message}`
 })
 
