@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [11.1.0](https://github.com/mojaloop/central-services-logger/compare/v11.0.1...v11.1.0) (2022-11-17)
+
+
+### Features
+
+* **mojaloop/#2928:** add contextual logging functionality ([#39](https://github.com/mojaloop/central-services-logger/issues/39)) ([8d29f41](https://github.com/mojaloop/central-services-logger/commit/8d29f41cdd1e296cb1fca68cbefc0af83d84bb2a)), closes [mojaloop/#2928](https://github.com/mojaloop/project/issues/2928)
+
 ### [11.0.1](https://github.com/mojaloop/central-services-logger/compare/v11.0.0...v11.0.1) (2022-05-19)
 
 ## [11.0.0](https://github.com/mojaloop/central-services-logger/compare/v10.6.2...v11.0.0) (2022-04-28)
