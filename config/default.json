@@ -8,5 +8,6 @@
     "prettyPrint": true,
     "colorize": true,
     "filename": "logs/combined.log"
-  }
+  },
+  "LOG_CONTEXT_INSPECTION_DEPTH": 10
 }

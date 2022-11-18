@@ -5,7 +5,8 @@ const Config = {
   customLevels: process.env.LOG_FILTER || RC.LOG_FILTER,
   level: process.env.LOG_LEVEL || RC.LOG_LEVEL,
   logTransport: RC.LOG_TRANSPORT,
-  transportFileOptions: RC.TRANSPORT_FILE_OPTIONS
+  transportFileOptions: RC.TRANSPORT_FILE_OPTIONS,
+  logContextInspectionDepth: RC.LOG_CONTEXT_INSPECTION_DEPTH
 }
 
 module.exports = Config

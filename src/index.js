@@ -32,7 +32,7 @@ const util = require('util')
 const { createLogger, format, transports } = require('winston')
 const { combine, timestamp, colorize, printf } = format
 
-const { customLevels, level, logTransport, transportFileOptions } = require('./lib/config')
+const { customLevels, level, logTransport, transportFileOptions, logContextInspectionDepth } = require('./lib/config')
 
 const allLevels = { error: 0, warn: 1, audit: 2, trace: 3, info: 4, perf: 5, verbose: 6, debug: 7, silly: 8 }
 const customLevelsArr = customLevels.split(/ *, */) // extra white space before/after the comma is ignored
@@ -43,7 +43,7 @@ const customFormat = printf(({ level, message, timestamp, context }) => {
     message = util.inspect({
       ...context,
       message
-    })
+    }, { depth: logContextInspectionDepth })
   }
   return `${timestamp} - ${level}: ${message}`
 })
