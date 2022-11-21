@@ -19,7 +19,7 @@ Edit the file in `./config/default.json` to configure the logger, or set the fol
 | `CSL_LOG_FILTER` | Applies a log filter. Specify a comma separated list of individual log levels to be included instead of specifying a `LOG_LEVEL` | `""` | e.g. `"error, trace, verbose" |
 | `CSL_LOG_TRANSPORT` | Selects the transport method. Either `console` or `file`. Uses the same transport for errors and standard logs | `console` | `console`, `file`
 | `CSL_TRANSPORT_FILE_OPTIONS` | _Optional._ Required if `LOG_TRANSPORT=file`. Configures the winston file transport | See `default.json` | See the [Winston Docs](https://github.com/winstonjs/winston#common-transport-options) |
-| `CSL_LOG_CONTEXT_INSPECTION_DEPTH` |  _Optional._  Control the number of times to recurse while formatting object when using contextual logging. | 10 | integer
+| `CSL_JSON_STRINGIFY_SPACING` |  _Optional._  A number that's used to insert white space into the output JSON string for readability purposes. | 2 | integer
 
 
 

@@ -6,7 +6,7 @@ const Config = {
   level: process.env.LOG_LEVEL || RC.LOG_LEVEL,
   logTransport: RC.LOG_TRANSPORT,
   transportFileOptions: RC.TRANSPORT_FILE_OPTIONS,
-  logContextInspectionDepth: RC.LOG_CONTEXT_INSPECTION_DEPTH
+  jsonStringifySpacing: RC.JSON_STRINGIFY_SPACING
 }
 
 module.exports = Config
