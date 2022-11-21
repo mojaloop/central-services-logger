@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [11.2.0](https://github.com/mojaloop/central-services-logger/compare/v11.1.0...v11.2.0) (2022-11-21)
+
+
+### Features
+
+* change formatter to output valid json ([#40](https://github.com/mojaloop/central-services-logger/issues/40)) ([c2a761e](https://github.com/mojaloop/central-services-logger/commit/c2a761e58425ffffa86c09d3883cb64a5517d215))
+
 ## [11.1.0](https://github.com/mojaloop/central-services-logger/compare/v11.0.1...v11.1.0) (2022-11-17)
 
 
