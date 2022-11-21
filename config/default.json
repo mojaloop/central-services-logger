@@ -8,5 +8,6 @@
     "prettyPrint": true,
     "colorize": true,
     "filename": "logs/combined.log"
-  }
+  },
+  "JSON_STRINGIFY_SPACING": 2
 }

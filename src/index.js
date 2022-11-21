@@ -28,26 +28,27 @@
 
 'use strict'
 
-const util = require('util')
 const { createLogger, format, transports } = require('winston')
 const { combine, timestamp, colorize, printf } = format
+const stringify = require('safe-stable-stringify')
 
-const { customLevels, level, logTransport, transportFileOptions } = require('./lib/config')
+const { customLevels, level, logTransport, transportFileOptions, jsonStringifySpacing } = require('./lib/config')
 
 const allLevels = { error: 0, warn: 1, audit: 2, trace: 3, info: 4, perf: 5, verbose: 6, debug: 7, silly: 8 }
 const customLevelsArr = customLevels.split(/ *, */) // extra white space before/after the comma is ignored
 const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !customLevelsArr.includes(key)) : []
 
 const customFormat = printf(({ level, message, timestamp, context }) => {
+  let formattedMessage = message
   if (context && context instanceof Object) {
-    message = util.inspect({
+    formattedMessage = {
       ...context,
       message
-    })
+    }
   }
-  return `${timestamp} - ${level}: ${message}`
+  formattedMessage = stringify(formattedMessage, null, jsonStringifySpacing)
+  return `${timestamp} - ${level}: ${formattedMessage}`
 })
-
 let transport = new transports.Console()
 if (logTransport === 'file') {
   transport = new transports.File(transportFileOptions)

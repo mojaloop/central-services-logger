@@ -6,6 +6,7 @@ const Winston = require('winston')
 const Proxyquire = require('proxyquire')
 const Logger = require('../../src/index')
 const config = require('../../src/lib/config')
+const stringify = require('safe-stable-stringify')
 
 Test('logger', function (loggerTest) {
   let sandbox
@@ -103,14 +104,34 @@ Test('contextual logger', function (loggerTest) {
   loggerTest.test('logger with context formats message properly', function (assert) {
     const logger = Logger.child({ context: { a: 1 } })
     logger.info('Message')
-    assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === '{ a: 1, message: \'Message\' }\n')
+    assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === stringify(
+      { a: 1, message: 'Message' },
+      null,
+      config.jsonStringifySpacing) + '\n')
+    assert.end()
+  })
+
+  loggerTest.test('handles circular references gracefully', function (assert) {
+    const obj1 = {
+      a: 1
+    }
+    const obj2 = {
+      obj1
+    }
+    obj1.newobj2 = obj2
+    const logger = Logger.child({ context: { a: obj2 } })
+    logger.info('Message')
+    assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === stringify(
+      { a: obj2, message: 'Message' },
+      null,
+      config.jsonStringifySpacing) + '\n')
     assert.end()
   })
 
   loggerTest.test('logger without context formats message properly', function (assert) {
     const logger = Logger.child()
     logger.info('Message')
-    assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === 'Message\n')
+    assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === '"Message"\n')
     assert.end()
   })
 

@@ -46,6 +46,7 @@
     "@types/node": "^18.11.9",
     "parse-strings-in-object": "2.0.0",
     "rc": "1.2.8",
+    "safe-stable-stringify": "^2.4.1",
     "winston": "3.8.2"
   },
   "devDependencies": {
