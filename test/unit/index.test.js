@@ -131,7 +131,7 @@ Test('contextual logger', function (loggerTest) {
   loggerTest.test('logger without context formats message properly', function (assert) {
     const logger = Logger.child()
     logger.info('Message')
-    assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === '"Message"\n')
+    assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === 'Message\n')
     assert.end()
   })
 
