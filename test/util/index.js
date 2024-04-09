@@ -1,4 +1,3 @@
-
 /**
  * Remove a certain module or path from node's module cache
  * Useful for testing changes in environment variables

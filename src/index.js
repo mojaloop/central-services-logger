@@ -41,14 +41,14 @@ const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !custo
 const customFormat = printf(({ level, message, timestamp, context }) => {
   let formattedMessage = message
   if (context && context instanceof Object) {
-    formattedMessage = {
+    formattedMessage = stringify({
       ...context,
       message
-    }
+    }, null, jsonStringifySpacing)
   }
-  formattedMessage = stringify(formattedMessage, null, jsonStringifySpacing)
   return `${timestamp} - ${level}: ${formattedMessage}`
 })
+
 let transport = new transports.Console()
 if (logTransport === 'file') {
   transport = new transports.File(transportFileOptions)
