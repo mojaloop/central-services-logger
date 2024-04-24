@@ -43,16 +43,16 @@
     "snapshot": "standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'chore(snapshot): {{currentTag}}'"
   },
   "dependencies": {
-    "@types/node": "^20.11.30",
+    "@types/node": "^20.12.7",
     "parse-strings-in-object": "2.0.0",
     "rc": "1.2.8",
     "safe-stable-stringify": "^2.4.3",
-    "winston": "3.12.0"
+    "winston": "3.13.0"
   },
   "devDependencies": {
     "audit-ci": "^6.6.1",
     "license-checker": "25.0.1",
-    "npm-check-updates": "16.14.17",
+    "npm-check-updates": "16.14.18",
     "nyc": "15.1.0",
     "pre-commit": "1.2.2",
     "proxyquire": "2.1.3",
