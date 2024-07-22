@@ -30,10 +30,10 @@ const mlLogger = require('./index')
 
 const asyncStorage = new AsyncLocalStorage()
 
-const loggerFactory = (context) => new ContextLogger(context)
+const loggerFactory = (context = null) => new ContextLogger(context)
 
 class ContextLogger {
-  constructor (context = null) {
+  constructor (context) {
     this.mlLogger = mlLogger
     this.context = this.createContext(context)
 

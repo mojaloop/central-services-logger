@@ -65,9 +65,9 @@ declare class ContextLogger {
   isSillyEnabled: boolean;
 }
 
-declare function loggerFactory(context: LogContext): ContextLogger;
+declare function loggerFactory(context?: LogContext): ContextLogger;
 
-declare const asyncStorage: typeof AsyncLocalStorage<Json>;
+declare const asyncStorage: AsyncLocalStorage<Json>;
 
 export {
   loggerFactory,
