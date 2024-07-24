@@ -27,14 +27,15 @@
 const { AsyncLocalStorage } = require('node:async_hooks')
 const stringify = require('safe-stable-stringify')
 const mlLogger = require('./index')
+const { allLevels } = require('./lib/constants')
 
 const asyncStorage = new AsyncLocalStorage()
 
 const loggerFactory = (context = null) => new ContextLogger(context)
 
 class ContextLogger {
-  constructor (context) {
-    this.mlLogger = mlLogger
+  constructor(context) {
+    this.mlLogger = mlLogger.child({})
     this.context = this.createContext(context)
 
     this.isErrorEnabled = this.mlLogger.isLevelEnabled('error')
@@ -87,6 +88,14 @@ class ContextLogger {
   child(context) {
     const childContext = this.createContext(context)
     return new ContextLogger(Object.assign({}, this.context, childContext))
+  }
+
+  setLevel(level) {
+    if (!allLevels[level]) {
+      this.warn('Unsupported log level:', { level })
+      return
+    }
+    this.mlLogger.level = level
   }
 
   formatLog(message, meta) {

@@ -2,7 +2,6 @@
 
 const { loggerFactory, asyncStorage, ContextLogger } = require('../../src/contextLogger')
 const Logger = require('../../src/index.js')
-const { afterEach } = require('node:test')
 
 describe('contextLogger Tests -->', () => {
   let log
@@ -19,7 +18,14 @@ describe('contextLogger Tests -->', () => {
     expect(log).toBeInstanceOf(ContextLogger)
   })
 
-  test('should not call Logger.debug if Logger.level > debug', () => {
+  test('should call Logger if Logger.level === called log method', () => {
+    const { level } = Logger
+    const spy = jest.spyOn(Logger, level)
+    log[level]('info')
+    expect(spy).toHaveBeenCalled()
+  })
+
+  test('should NOT call Logger.debug if Logger.level > debug', () => {
     const spy = jest.spyOn(Logger, 'debug')
     log.debug('test')
     expect(spy).not.toHaveBeenCalled()
@@ -42,5 +48,23 @@ describe('contextLogger Tests -->', () => {
     log.info('test')
     expect(spy.mock.lastCall[0]).toContain(JSON.stringify(data))
     await promise
+  })
+
+  test('should set new logLevel', () => {
+    const newLevel = 'warn'
+    expect(log.mlLogger.level).not.toBe(newLevel)
+
+    log.setLevel(newLevel)
+    expect(log.mlLogger.level).toBe(newLevel)
+  })
+
+  test('should not set unsupported logLevel, and output warning', () => {
+    const newLevel = 'xxx'
+    const { level } = log.mlLogger
+    const spy = jest.spyOn(Logger, 'warn')
+
+    log.setLevel(newLevel)
+    expect(log.mlLogger.level).toBe(level)
+    expect(spy).toHaveBeenCalled()
   })
 })

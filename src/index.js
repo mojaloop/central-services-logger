@@ -29,12 +29,12 @@
 'use strict'
 
 const { createLogger, format, transports } = require('winston')
-const { combine, timestamp, colorize, printf } = format
 const stringify = require('safe-stable-stringify')
-
 const { customLevels, level, logTransport, transportFileOptions, jsonStringifySpacing } = require('./lib/config')
+const { allLevels } = require('./lib/constants')
 
-const allLevels = { error: 0, warn: 1, audit: 2, trace: 3, info: 4, perf: 5, verbose: 6, debug: 7, silly: 8 }
+const { combine, timestamp, colorize, printf } = format
+
 const customLevelsArr = customLevels.split(/ *, */) // extra white space before/after the comma is ignored
 const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !customLevelsArr.includes(key)) : []
 

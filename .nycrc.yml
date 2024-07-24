@@ -15,5 +15,5 @@ reporter: [
 ]
 exclude: [
   "**/node_modules/**",
-  "src/contextLogger.js"  ## should be tested by Jest
+  "src/contextLogger.js"  ## is tested by Jest
 ]

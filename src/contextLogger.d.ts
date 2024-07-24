@@ -24,6 +24,9 @@
  **********/
 
 import { AsyncLocalStorage } from 'async_hooks';
+import { allLevels } from './lib/constants';
+
+type AllLevels = keyof typeof allLevels;
 
 type Json =
   | string
@@ -53,6 +56,7 @@ declare class ContextLogger {
   trace: LogMethod;
   perf: LogMethod;
   child(context: Record<string, any>): ContextLogger;
+  setLevel(level: AllLevels): void;
 
   isErrorEnabled: boolean;
   isWarnEnabled: boolean;
