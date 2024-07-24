@@ -67,4 +67,53 @@ describe('contextLogger Tests -->', () => {
     expect(log.mlLogger.level).toBe(level)
     expect(spy).toHaveBeenCalled()
   })
+
+  test('should create completely independent instances using .child() method', () => {
+    const log1 = loggerFactory('L1')
+    const log2 = loggerFactory('L2')
+    expect(log1).not.toEqual(log2)
+    expect(log1.mlLogger).not.toEqual(log2.mlLogger)
+  })
+
+  test('should set logLevel completely independently for different children', () => {
+    const log1 = loggerFactory('L1')
+    const log2 = loggerFactory('L2')
+
+    expect(log1.mlLogger.level).toBe('info')
+    expect(log1.mlLogger.isLevelEnabled('debug')).toBe(false)
+
+    expect(log2.mlLogger.level).toBe('info')
+    expect(log2.mlLogger.isLevelEnabled('warn')).toBe(true)
+
+    log1.setLevel('debug')
+    log2.setLevel('warn')
+
+    expect(log1.mlLogger.level).toBe('debug')
+    expect(log1.mlLogger.isLevelEnabled('debug')).toBe(true)
+
+    expect(log2.mlLogger.level).toBe('warn')
+    expect(log2.mlLogger.isLevelEnabled('warn')).toBe(true)
+  })
+
+  test('should call underlying lmLogger methods based on logLevel', () => {
+    const log1 = loggerFactory('L1')
+    const log2 = loggerFactory('L2')
+    const spyDebug1 = jest.spyOn(log1.mlLogger, 'debug')
+    const spyWarn2 = jest.spyOn(log2.mlLogger, 'warn')
+
+    log1.debug('debug')
+    expect(spyDebug1).not.toHaveBeenCalled()
+
+    log2.warn('warn')
+    expect(spyWarn2).toHaveBeenCalled()
+
+    log1.setLevel('debug')
+    log2.setLevel('warn')
+
+    log1.debug('debug2')
+    expect(spyDebug1).toHaveBeenCalled()
+
+    log2.warn('warn')
+    expect(spyWarn2).toHaveBeenCalledTimes(2)
+  })
 })

@@ -6,8 +6,9 @@ const Proxyquire = require('proxyquire')
 
 const config = require('../../../src/lib/config')
 
-const sandbox = Sinon.createSandbox()
 Test('config', (configTest) => {
+  const sandbox = Sinon.createSandbox()
+
   configTest.afterEach(t => {
     delete process.env.LOG_LEVEL
     delete process.env.LOG_FILTER
@@ -53,9 +54,10 @@ Test('config', (configTest) => {
 
     // Act
     try {
-      Proxyquire('../../../src/createMlLogger', {
+      const createMlLogger = Proxyquire('../../../src/createMlLogger', {
         './lib/config': customConfig
       })
+      createMlLogger()
       assert.fail('should have thrown error')
     } catch (err) {
       // Assert

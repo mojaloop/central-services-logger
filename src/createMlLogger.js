@@ -49,12 +49,12 @@ const customFormat = printf(({ level, message, timestamp, context }) => {
   return `${timestamp} - ${level}: ${formattedMessage}`
 })
 
-let transport = new transports.Console()
-if (logTransport === 'file') {
-  transport = new transports.File(transportFileOptions)
-}
-
 const createMlLogger = () => {
+  let transport = new transports.Console()
+  if (logTransport === 'file') {
+    transport = new transports.File(transportFileOptions)
+  }
+
   const Logger = createLogger({
     level,
     levels: allLevels,

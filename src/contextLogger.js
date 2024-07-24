@@ -82,7 +82,7 @@ class ContextLogger {
   }
 
   setLevel(level) {
-    if (!allLevels[level]) {
+    if (allLevels[level] === undefined) {
       this.warn('Unsupported log level:', { level })
       return
     }
