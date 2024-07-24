@@ -35,7 +35,7 @@ const { allLevels } = require('./lib/constants')
 
 const { combine, timestamp, colorize, printf } = format
 
-const customLevelsArr = customLevels.split(/ *, */) // extra white space before/after the comma is ignored
+const customLevelsArr = customLevels.split(',').map(l => l.trim()).filter(Boolean)
 const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !customLevelsArr.includes(key)) : []
 
 const customFormat = printf(({ level, message, timestamp, context }) => {
