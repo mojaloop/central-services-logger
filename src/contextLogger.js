@@ -37,16 +37,7 @@ class ContextLogger {
   constructor(context) {
     this.mlLogger = mlLogger.child({})
     this.context = this.createContext(context)
-
-    this.isErrorEnabled = this.mlLogger.isLevelEnabled('error')
-    this.isWarnEnabled = this.mlLogger.isLevelEnabled('warn')
-    this.isAuditEnabled = this.mlLogger.isLevelEnabled('audit')
-    this.isTraceEnabled = this.mlLogger.isLevelEnabled('trace')
-    this.isInfoEnabled = this.mlLogger.isLevelEnabled('info')
-    this.isPerfEnabled = this.mlLogger.isLevelEnabled('perf')
-    this.isVerboseEnabled = this.mlLogger.isLevelEnabled('verbose')
-    this.isDebugEnabled = this.mlLogger.isLevelEnabled('debug')
-    this.isSillyEnabled = this.mlLogger.isLevelEnabled('silly')
+    this.setIsEnabledFlags()
   }
 
   error(message, meta) {
@@ -96,6 +87,7 @@ class ContextLogger {
       return
     }
     this.mlLogger.level = level
+    this.setIsEnabledFlags()
   }
 
   formatLog(message, meta) {
@@ -114,6 +106,18 @@ class ContextLogger {
     return !context
       ? null
       : typeof context === 'object' ? context : { context }
+  }
+
+  setIsEnabledFlags() {
+    this.isErrorEnabled = this.mlLogger.isLevelEnabled('error')
+    this.isWarnEnabled = this.mlLogger.isLevelEnabled('warn')
+    this.isAuditEnabled = this.mlLogger.isLevelEnabled('audit')
+    this.isTraceEnabled = this.mlLogger.isLevelEnabled('trace')
+    this.isInfoEnabled = this.mlLogger.isLevelEnabled('info')
+    this.isPerfEnabled = this.mlLogger.isLevelEnabled('perf')
+    this.isVerboseEnabled = this.mlLogger.isLevelEnabled('verbose')
+    this.isDebugEnabled = this.mlLogger.isLevelEnabled('debug')
+    this.isSillyEnabled = this.mlLogger.isLevelEnabled('silly')
   }
 
   static makeLogString(logMessage, metaData) {
