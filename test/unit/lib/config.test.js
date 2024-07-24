@@ -53,7 +53,7 @@ Test('config', (configTest) => {
 
     // Act
     try {
-      Proxyquire('../../../src/index', {
+      Proxyquire('../../../src/createMlLogger', {
         './lib/config': customConfig
       })
       assert.fail('should have thrown error')
@@ -95,9 +95,10 @@ Test('config', (configTest) => {
     }
 
     // Act
-    const LoggerProxy = Proxyquire('../../../src/index', {
+    const createMlLogger = Proxyquire('../../../src/createMlLogger', {
       './lib/config': customConfig
     })
+    const LoggerProxy = createMlLogger()
 
     // Assert
     assert.equal(LoggerProxy.transports[0].name, 'file', 'Transport is file')

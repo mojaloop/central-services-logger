@@ -19,8 +19,8 @@ describe('contextLogger Tests -->', () => {
   })
 
   test('should call Logger if Logger.level === called log method', () => {
-    const { level } = Logger
-    const spy = jest.spyOn(Logger, level)
+    const { level } = log.mlLogger
+    const spy = jest.spyOn(log.mlLogger, level)
     log[level]('info')
     expect(spy).toHaveBeenCalled()
   })
@@ -32,14 +32,14 @@ describe('contextLogger Tests -->', () => {
   })
 
   test('should log meta data', () => {
-    const spy = jest.spyOn(Logger, 'info')
+    const spy = jest.spyOn(log.mlLogger, 'info')
     const meta = { a: Date.now() }
     log.info('test', meta)
     expect(spy.mock.lastCall[0]).toContain(JSON.stringify(meta))
   })
 
   test('should have access to async context', async () => {
-    const spy = jest.spyOn(Logger, 'info')
+    const spy = jest.spyOn(log.mlLogger, 'info')
     const data = { x: Date.now() }
     const promise = new Promise((resolve) => {
       asyncStorage.enterWith(data)
@@ -61,7 +61,7 @@ describe('contextLogger Tests -->', () => {
   test('should not set unsupported logLevel, and output warning', () => {
     const newLevel = 'xxx'
     const { level } = log.mlLogger
-    const spy = jest.spyOn(Logger, 'warn')
+    const spy = jest.spyOn(log.mlLogger, 'warn')
 
     log.setLevel(newLevel)
     expect(log.mlLogger.level).toBe(level)

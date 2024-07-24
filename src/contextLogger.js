@@ -26,7 +26,7 @@
 /* eslint-disable space-before-function-paren */
 const { AsyncLocalStorage } = require('node:async_hooks')
 const stringify = require('safe-stable-stringify')
-const mlLogger = require('./index')
+const createMlLogger = require('./createMlLogger')
 const { allLevels } = require('./lib/constants')
 
 const asyncStorage = new AsyncLocalStorage()
@@ -35,7 +35,7 @@ const loggerFactory = (context = null) => new ContextLogger(context)
 
 class ContextLogger {
   constructor(context) {
-    this.mlLogger = mlLogger.child({})
+    this.mlLogger = createMlLogger()
     this.context = this.createContext(context)
     this.setIsEnabledFlags()
   }
@@ -61,7 +61,7 @@ class ContextLogger {
   }
 
   silly(message, meta) {
-    this.isSillyEnabled() && this.mlLogger.silly(this.formatLog(message, meta))
+    this.isSillyEnabled && this.mlLogger.silly(this.formatLog(message, meta))
   }
 
   audit (message, meta) {

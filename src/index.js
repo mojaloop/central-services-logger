@@ -28,73 +28,8 @@
 
 'use strict'
 
-const { createLogger, format, transports } = require('winston')
-const stringify = require('safe-stable-stringify')
-const { customLevels, level, logTransport, transportFileOptions, jsonStringifySpacing } = require('./lib/config')
-const { allLevels } = require('./lib/constants')
+const createMlLogger = require('./createMlLogger')
 
-const { combine, timestamp, colorize, printf } = format
-
-const customLevelsArr = customLevels.split(/ *, */) // extra white space before/after the comma is ignored
-const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !customLevelsArr.includes(key)) : []
-
-const customFormat = printf(({ level, message, timestamp, context }) => {
-  let formattedMessage = message
-  if (context && context instanceof Object) {
-    formattedMessage = stringify({
-      ...context,
-      message
-    }, null, jsonStringifySpacing)
-  }
-  return `${timestamp} - ${level}: ${formattedMessage}`
-})
-
-let transport = new transports.Console()
-if (logTransport === 'file') {
-  transport = new transports.File(transportFileOptions)
-}
-
-const Logger = createLogger({
-  level,
-  levels: allLevels,
-  format: combine(
-    timestamp(),
-    colorize({
-      colors: {
-        audit: 'magenta',
-        trace: 'white',
-        perf: 'green'
-      }
-    }),
-    customFormat
-  ),
-  transports: [
-    transport
-  ],
-  exceptionHandlers: [
-    transport
-  ],
-  exitOnError: false
-})
-
-// Modify Logger before export
-ignoredLevels.forEach(level => { Logger[level] = () => {} })
-
-// Add "is<level>Enabled" flags
-// Those are used for optimimizing-out disabled logs sub-calls
-//
-// In this example, JSON.stringify() would get called even if "info" level is off.
-//   Logger.info(`Notification:consumeMessage message: - ${JSON.stringify(message)}`)
-// so to optimize-out:
-//   Logger.isInfoEnabled && Logger.info(`Notification:consumeMessage message: - ${JSON.stringify(message)}`)
-Logger.isErrorEnabled = Logger.isLevelEnabled('error')
-Logger.isWarnEnabled = Logger.isLevelEnabled('warn')
-Logger.isAuditEnabled = Logger.isLevelEnabled('audit')
-Logger.isTraceEnabled = Logger.isLevelEnabled('trace')
-Logger.isInfoEnabled = Logger.isLevelEnabled('info')
-Logger.isPerfEnabled = Logger.isLevelEnabled('perf')
-Logger.isVerboseEnabled = Logger.isLevelEnabled('verbose')
-Logger.isDebugEnabled = Logger.isLevelEnabled('debug')
-Logger.isSillyEnabled = Logger.isLevelEnabled('silly')
+const Logger = createMlLogger()
 
 module.exports = Logger
