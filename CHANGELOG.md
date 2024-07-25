@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [11.5.0](https://github.com/mojaloop/central-services-logger/compare/v11.3.1...v11.5.0) (2024-07-25)
+
+
+### Features
+
+* **csi-334:** added contextLogger with asyncStorage ([#52](https://github.com/mojaloop/central-services-logger/issues/52)) ([8a46e3e](https://github.com/mojaloop/central-services-logger/commit/8a46e3e8f36f7d18f34f90a5c0883d56c2192123))
+
 ### [11.4.5](https://github.com/mojaloop/central-services-logger/compare/v11.4.4...v11.4.5) (2024-07-24)
 
 ### [11.4.4](https://github.com/mojaloop/central-services-logger/compare/v11.4.3...v11.4.4) (2024-07-24)
