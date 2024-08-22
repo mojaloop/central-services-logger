@@ -34,8 +34,8 @@ const asyncStorage = new AsyncLocalStorage()
 const loggerFactory = (context = null) => new ContextLogger(context)
 
 class ContextLogger {
-  constructor(context) {
-    this.mlLogger = createMlLogger()
+  constructor(context, options = {}) {
+    this.mlLogger = options?.mlLogger || createMlLogger()
     this.context = this.createContext(context)
     this.setIsEnabledFlags()
   }
@@ -77,8 +77,9 @@ class ContextLogger {
   }
 
   child(context) {
+    const { mlLogger } = this
     const childContext = this.createContext(context)
-    return new ContextLogger(Object.assign({}, this.context, childContext))
+    return new ContextLogger(Object.assign({}, this.context, childContext), { mlLogger })
   }
 
   setLevel(level) {

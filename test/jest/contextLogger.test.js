@@ -1,5 +1,4 @@
 /* eslint-env jest */
-
 const { loggerFactory, asyncStorage, ContextLogger } = require('../../src/contextLogger')
 const Logger = require('../../src/index.js')
 
@@ -38,16 +37,41 @@ describe('contextLogger Tests -->', () => {
     expect(spy.mock.lastCall[0]).toContain(JSON.stringify(meta))
   })
 
-  test('should have access to async context', async () => {
-    const spy = jest.spyOn(log.mlLogger, 'info')
-    const data = { x: Date.now() }
-    const promise = new Promise((resolve) => {
+  const createPromiseWithAsyncStorage = (data, ms = 500) => {
+    return new Promise((resolve) => {
       asyncStorage.enterWith(data)
-      setTimeout(resolve, 500)
+      setTimeout(() => {
+        log.info('inside createPromiseWithAsyncStorage...', { ms })
+        resolve()
+      }, ms)
     })
+  }
+
+  test('should have access to async context inside and after a promise', async () => {
+    const spy = jest.spyOn(log.mlLogger, 'info')
+    const data = { x: String(Date.now()) }
+    const promise = createPromiseWithAsyncStorage(data)
     log.info('test')
-    expect(spy.mock.lastCall[0]).toContain(JSON.stringify(data))
+    expect(spy.mock.lastCall[0]).toContain(data.x)
     await promise
+    expect(spy.mock.lastCall[0]).toContain(data.x)
+  })
+
+  test('should have access to different async contexts independently', async () => {
+    const spy = jest.spyOn(log.mlLogger, 'info')
+
+    const data1 = { x1: '1' }
+    const ms1 = 1000
+    const promise1 = createPromiseWithAsyncStorage(data1, ms1)
+
+    const data2 = { x2: '22' }
+    const ms2 = 200
+    const promise2 = createPromiseWithAsyncStorage(data2, ms2)
+
+    await Promise.all([promise1, promise2])
+    const [[first], [second]] = spy.mock.calls
+    expect(first).toContain(JSON.stringify({ ms: ms2, ...data2 }))
+    expect(second).toContain(JSON.stringify({ ms: ms1, ...data1 }))
   })
 
   test('should set new logLevel', () => {
@@ -68,11 +92,18 @@ describe('contextLogger Tests -->', () => {
     expect(spy).toHaveBeenCalled()
   })
 
-  test('should create completely independent instances using .child() method', () => {
+  test('should create completely independent instances using loggerFactory', () => {
     const log1 = loggerFactory('L1')
     const log2 = loggerFactory('L2')
     expect(log1).not.toEqual(log2)
     expect(log1.mlLogger).not.toEqual(log2.mlLogger)
+  })
+
+  test('should create independent instances using .child() method, but with the same underlying mlLogger', () => {
+    const log1 = log.child()
+    const log2 = log.child()
+    expect(log1).not.toBe(log2)
+    expect(log1.mlLogger).toEqual(log2.mlLogger)
   })
 
   test('should set logLevel completely independently for different children', () => {
@@ -95,7 +126,7 @@ describe('contextLogger Tests -->', () => {
     expect(log2.mlLogger.isLevelEnabled('warn')).toBe(true)
   })
 
-  test('should call underlying lmLogger methods based on logLevel', () => {
+  test('should call underlying mlLogger methods based on logLevel', () => {
     const log1 = loggerFactory('L1')
     const log2 = loggerFactory('L2')
     const spyDebug1 = jest.spyOn(log1.mlLogger, 'debug')

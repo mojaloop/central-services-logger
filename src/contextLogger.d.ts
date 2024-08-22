@@ -38,13 +38,30 @@ type Json =
 type LogContext = Json | null;
 type LogMeta = unknown; //  Json | Error | null;
 type LogMethod = (message: string | Error, meta?: LogMeta) => void;
+type LogMethods = Prettify<{
+  [key in AllLevels]: LogMethod;
+} & {
+  [isKey in `is${Capitalize<AllLevels>}Enabled`]: boolean;
+}>;
 
-interface ContextLoggerConstructor {
-  new (context?: LogContext): ContextLogger;
+interface ILogger extends LogMethods {
+  child(context?: LogContext): ILogger;
+  setLevel(level: AllLevels): void;
+  isLevelEnabled(level: AllLevels): boolean;
 }
 
-declare class ContextLogger {
-  constructor(context?: LogContext);
+/** Makes the T hover overlay more readable in IDE */
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & unknown;
+
+type ContextLoggerOptions = {
+  mlLogger?: ILogger; // underlying ML Logger (winston)
+  jsonOutput?: boolean;
+}
+
+declare class ContextLogger implements ILogger {
+  constructor(context?: LogContext, options?: ContextLoggerOptions);
 
   error: LogMethod;
   warn: LogMethod;
@@ -55,9 +72,10 @@ declare class ContextLogger {
   audit: LogMethod;
   trace: LogMethod;
   perf: LogMethod;
-  child(context: Record<string, any>): ContextLogger;
+  child(context?: LogContext): ContextLogger;
   setLevel(level: AllLevels): void;
 
+  isLevelEnabled(level: AllLevels): boolean;
   isErrorEnabled: boolean;
   isWarnEnabled: boolean;
   isAuditEnabled: boolean;
@@ -69,12 +87,13 @@ declare class ContextLogger {
   isSillyEnabled: boolean;
 }
 
-declare function loggerFactory(context?: LogContext): ContextLogger;
+declare function loggerFactory(context?: LogContext): ContextLogger; // or better ILogger?
 
 declare const asyncStorage: AsyncLocalStorage<Json>;
 
 export {
   loggerFactory,
   asyncStorage,
-  ContextLogger
+  ContextLogger, // think, if we need to export it
+  ILogger,
 };
