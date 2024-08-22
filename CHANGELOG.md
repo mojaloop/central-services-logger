@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.5.1](https://github.com/mojaloop/central-services-logger/compare/v11.5.0...v11.5.1) (2024-08-22)
+
+
+### Bug Fixes
+
+* **csi-528:** added husky ([201bce1](https://github.com/mojaloop/central-services-logger/commit/201bce17861fdf0a05d0c80b9e5d4a416b680a22))
+* **csi-528:** fixed logger.child() to avoid creating new winston instance ([963ac80](https://github.com/mojaloop/central-services-logger/commit/963ac802e56d10c7f15777c8dba3060d1f0b5bfc))
+* **csi-528:** updated deps ([d010671](https://github.com/mojaloop/central-services-logger/commit/d0106712d05162c04780882e9422c52bf3b4e70b))
+* **csi-528:** updated deps ([7d39c51](https://github.com/mojaloop/central-services-logger/commit/7d39c51ca63243ae991c0be5fa10eb7eb0392a7e))
+
 ## [11.5.0](https://github.com/mojaloop/central-services-logger/compare/v11.3.1...v11.5.0) (2024-07-25)
 
 
