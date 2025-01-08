@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.5.2](https://github.com/mojaloop/central-services-logger/compare/v11.5.0...v11.5.2) (2025-01-08)
+
+
+### Bug Fixes
+
+* **csi-528:** fixed logger.child() to avoid creating new winston instance ([#53](https://github.com/mojaloop/central-services-logger/issues/53)) ([3768027](https://github.com/mojaloop/central-services-logger/commit/3768027ac9d9020d664a238eed2fd1595294a5f8))
+
 ### [11.5.1](https://github.com/mojaloop/central-services-logger/compare/v11.5.0...v11.5.1) (2024-08-22)
 
 
