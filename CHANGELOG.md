@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.5.4](https://github.com/mojaloop/central-services-logger/compare/v11.5.3...v11.5.4) (2025-01-27)
+
+
+### Bug Fixes
+
+* add missing types ([#56](https://github.com/mojaloop/central-services-logger/issues/56)) ([b1b1c01](https://github.com/mojaloop/central-services-logger/commit/b1b1c011e555f03f5ee9e059593766c372d3393a))
+
 ### [11.5.3](https://github.com/mojaloop/central-services-logger/compare/v11.5.2...v11.5.3) (2025-01-24)
 
 ### [11.5.2](https://github.com/mojaloop/central-services-logger/compare/v11.5.0...v11.5.2) (2025-01-08)
