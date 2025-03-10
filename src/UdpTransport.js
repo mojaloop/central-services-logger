@@ -6,7 +6,7 @@ const winston = require('winston')
 class UdpStream extends stream.Writable {
   constructor (config) {
     super({ autoDestroy: true, ...config })
-    this.config = config || {}
+    this.config = config
     this.host = this.config.host
     this.port = this.config.port
     this.max = this.config.max
@@ -27,6 +27,7 @@ class UdpStream extends stream.Writable {
       this.socket.close()
     }
     this.socket = udp.createSocket(this.config.type || 'udp4')
+    this.socket.unref()
     this.id = this.createId()
     this.mtu = (this.config.mtu || 1400) - this.id.length
     this.socket.on('message', this.handleMessage.bind(this))
@@ -43,11 +44,8 @@ class UdpStream extends stream.Writable {
   }
 
   _write (message, encoding, done) {
-    if (typeof message === 'object') {
-      message = Buffer.from(JSON.stringify(message) + '\n', encoding)
-    } else if (typeof message === 'string') {
-      message = Buffer.from(message, encoding)
-    }
+    message = Buffer.from(JSON.stringify(message) + '\n', encoding)
+
     if (this.max && message && message.length > this.max) {
       done()
       return
