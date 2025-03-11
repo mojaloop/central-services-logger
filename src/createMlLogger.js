@@ -32,53 +32,37 @@
 
 'use strict'
 
-const { createLogger, format, transports } = require('winston')
-const stringify = require('safe-stable-stringify')
-const { customLevels, level, logTransport, transportFileOptions, jsonStringifySpacing } = require('./lib/config')
+const { createLogger, format, transports: winstonTransports } = require('winston')
+const { customLevels, level, logTransport, transportFileOptions } = require('./lib/config')
 const { allLevels } = require('./lib/constants')
-
-const { combine, timestamp, colorize, printf } = format
+const UdpTransport = require('./UdpTransport')
+const ConsoleTransport = require('./ConsoleTransport')
 
 const customLevelsArr = customLevels.split(',').map(l => l.trim()).filter(Boolean)
 const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !customLevelsArr.includes(key)) : []
 
-const customFormat = printf(({ level, message, timestamp, context }) => {
-  let formattedMessage = message
-  if (context && context instanceof Object) {
-    formattedMessage = stringify({
-      ...context,
-      message
-    }, null, jsonStringifySpacing)
-  }
-  return `${timestamp} - ${level}: ${formattedMessage}`
-})
+const transportsMap = {
+  console: ConsoleTransport,
+  file: winstonTransports.File,
+  http: winstonTransports.Http,
+  stream: winstonTransports.Stream,
+  udp: UdpTransport
+}
 
 const createMlLogger = () => {
-  let transport = new transports.Console()
+  let transports
   if (logTransport === 'file') {
-    transport = new transports.File(transportFileOptions)
-  }
+    transports = [new winstonTransports.File(transportFileOptions)]
+  } else if (typeof logTransport === 'object') {
+    transports = Object.entries(logTransport).map(([name, { transport = name, ...config }]) => new transportsMap[transport](config))
+  } else transports = [new ConsoleTransport()]
 
   const Logger = createLogger({
     level,
     levels: allLevels,
-    format: combine(
-      timestamp(),
-      colorize({
-        colors: {
-          audit: 'magenta',
-          trace: 'white',
-          perf: 'green'
-        }
-      }),
-      customFormat
-    ),
-    transports: [
-      transport
-    ],
-    exceptionHandlers: [
-      transport
-    ],
+    format: format.timestamp(),
+    transports,
+    exceptionHandlers: transports,
     exitOnError: false
   })
 

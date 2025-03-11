@@ -34,7 +34,7 @@ describe('contextLogger Tests -->', () => {
     const spy = jest.spyOn(log.mlLogger, 'info')
     const meta = { a: Date.now() }
     log.info('test', meta)
-    expect(spy.mock.lastCall[0]).toContain(JSON.stringify(meta))
+    expect(spy.mock.lastCall[1]).toMatchObject(meta)
   })
 
   const createPromiseWithAsyncStorage = (data, ms = 500) => {
@@ -52,9 +52,9 @@ describe('contextLogger Tests -->', () => {
     const data = { x: String(Date.now()) }
     const promise = createPromiseWithAsyncStorage(data)
     log.info('test')
-    expect(spy.mock.lastCall[0]).toContain(data.x)
+    expect(spy.mock.lastCall[1]).toMatchObject(data)
     await promise
-    expect(spy.mock.lastCall[0]).toContain(data.x)
+    expect(spy.mock.lastCall[1]).toMatchObject(data)
   })
 
   test('should have access to different async contexts independently', async () => {
@@ -69,9 +69,9 @@ describe('contextLogger Tests -->', () => {
     const promise2 = createPromiseWithAsyncStorage(data2, ms2)
 
     await Promise.all([promise1, promise2])
-    const [[first], [second]] = spy.mock.calls
-    expect(first).toContain(JSON.stringify({ ms: ms2, ...data2 }))
-    expect(second).toContain(JSON.stringify({ ms: ms1, ...data1 }))
+    const [[, first], [, second]] = spy.mock.calls
+    expect(first).toMatchObject({ ms: ms2, ...data2 })
+    expect(second).toMatchObject({ ms: ms1, ...data1 })
   })
 
   test('should set new logLevel', () => {

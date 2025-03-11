@@ -28,7 +28,6 @@
 
 /* eslint-disable space-before-function-paren */
 const { AsyncLocalStorage } = require('node:async_hooks')
-const stringify = require('safe-stable-stringify')
 const createMlLogger = require('./createMlLogger')
 const { allLevels } = require('./lib/constants')
 
@@ -44,39 +43,39 @@ class ContextLogger {
   }
 
   error(message, meta) {
-    this.isErrorEnabled && this.mlLogger.error(this.formatLog(message, meta))
+    this.isErrorEnabled && this.mlLogger.error(...this.formatLog(message, meta))
   }
 
   warn(message, meta) {
-    this.isWarnEnabled && this.mlLogger.warn(this.formatLog(message, meta))
+    this.isWarnEnabled && this.mlLogger.warn(...this.formatLog(message, meta))
   }
 
   info(message, meta) {
-    this.isInfoEnabled && this.mlLogger.info(this.formatLog(message, meta))
+    this.isInfoEnabled && this.mlLogger.info(...this.formatLog(message, meta))
   }
 
   verbose(message, meta) {
-    this.isVerboseEnabled && this.mlLogger.verbose(this.formatLog(message, meta))
+    this.isVerboseEnabled && this.mlLogger.verbose(...this.formatLog(message, meta))
   }
 
   debug(message, meta) {
-    this.isDebugEnabled && this.mlLogger.debug(this.formatLog(message, meta))
+    this.isDebugEnabled && this.mlLogger.debug(...this.formatLog(message, meta))
   }
 
   silly(message, meta) {
-    this.isSillyEnabled && this.mlLogger.silly(this.formatLog(message, meta))
+    this.isSillyEnabled && this.mlLogger.silly(...this.formatLog(message, meta))
   }
 
   audit (message, meta) {
-    this.isAuditEnabled && this.mlLogger.audit(this.formatLog(message, meta))
+    this.isAuditEnabled && this.mlLogger.audit(...this.formatLog(message, meta))
   }
 
   trace(message, meta) {
-    this.isTraceEnabled && this.mlLogger.trace(this.formatLog(message, meta))
+    this.isTraceEnabled && this.mlLogger.trace(...this.formatLog(message, meta))
   }
 
   perf(message, meta) {
-    this.isPerfEnabled && this.mlLogger.perf(this.formatLog(message, meta))
+    this.isPerfEnabled && this.mlLogger.perf(...this.formatLog(message, meta))
   }
 
   child(context) {
@@ -97,13 +96,13 @@ class ContextLogger {
   formatLog(message, meta) {
     const store = asyncStorage.getStore()
 
-    if (!meta && !this.context && !store) return ContextLogger.makeLogString(message)
+    if (!meta && !this.context && !store) return [message]
 
     const metaData = meta instanceof Error
       ? ContextLogger.formatError(meta)
       : typeof meta === 'object' ? meta : { meta }
 
-    return ContextLogger.makeLogString(message, Object.assign({}, store, this.context, metaData))
+    return [message, { ...store, ...this.context, ...metaData }]
   }
 
   createContext(context) {
@@ -122,14 +121,6 @@ class ContextLogger {
     this.isVerboseEnabled = this.mlLogger.isLevelEnabled('verbose')
     this.isDebugEnabled = this.mlLogger.isLevelEnabled('debug')
     this.isSillyEnabled = this.mlLogger.isLevelEnabled('silly')
-  }
-
-  static makeLogString(logMessage, metaData) {
-    const msgString = logMessage instanceof Error
-      ? (logMessage.stack || logMessage.message)
-      : (typeof logMessage === 'object' ? stringify(logMessage) : logMessage)
-
-    return metaData ? `${msgString} - ${stringify(metaData)}` : msgString
   }
 
   static formatError(error) {
