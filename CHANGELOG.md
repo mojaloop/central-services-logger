@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [11.6.0](https://github.com/mojaloop/central-services-logger/compare/v11.5.5...v11.6.0) (2025-03-11)
+
+
+### Features
+
+* multiple configurable transports ([#58](https://github.com/mojaloop/central-services-logger/issues/58)) ([cd24562](https://github.com/mojaloop/central-services-logger/commit/cd24562d86a1ced7bb23b31817327e1badd69189))
+
 ### [11.5.5](https://github.com/mojaloop/central-services-logger/compare/v11.5.4...v11.5.5) (2025-02-18)
 
 ### [11.5.4](https://github.com/mojaloop/central-services-logger/compare/v11.5.3...v11.5.4) (2025-01-27)
