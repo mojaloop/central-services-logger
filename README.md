@@ -43,6 +43,26 @@ should be objects that contain the transport type and configuration, e.g.:
 }
 ```
 
+### UDP Transport
+
+The `udp` transport is a custom transport that sends logs to a remote server
+via UDP. The following configuration options are available:
+
+| Option     | Description                                     | Default   | Required |
+| ---        | ---                                             | ---       | ---      |
+| `host`     | The hostname or IP address of the remote server | localhost | No       |
+| `port`     | The port number of the remote server            | 5170      | No       |
+| `mtu`      | The maximum size of a single packet in bytes    | 1400      | No       |
+| `max`      | The maximum size of logged message              | 4096      | No       |
+| `id`       | Optional id to put in front of each packet      | false     | No       |
+
+- Messages above the `max` size will not be sent.
+- `id` is useful for identifying the source of the logs on the remote server.
+  It can be set to `true` to generate a random id, or a hex string to use a
+  specific id.
+- `mtu` should be set to the maximum packet size that the network can handle.
+  Messages that are too large will be split into multiple network packets.
+
 ## Usage
 
 ### Logger

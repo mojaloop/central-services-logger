@@ -29,7 +29,7 @@ class UdpStream extends stream.Writable {
     this.socket = udp.createSocket(this.config.type || 'udp4')
     this.socket.unref()
     this.id = this.createId()
-    this.mtu = (this.config.mtu || 1400) - this.id.length
+    this.mtu = this.config.mtu - this.id.length
     this.socket.on('message', this.handleMessage.bind(this))
     this.on('error', () => console.error) // ignore udp errors
   }
@@ -89,6 +89,9 @@ module.exports = class UdpTransport extends winston.transports.Stream {
         objectMode: true,
         host: 'localhost',
         port: 5170,
+        id: false,
+        max: 4096,
+        mtu: 1400,
         ...config
       })
     })

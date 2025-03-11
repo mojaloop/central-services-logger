@@ -21,26 +21,41 @@ Test('UdpTransport', (udpTransportTest) => {
     test.end()
   })
 
-  udpTransportTest.test('should use random configured prefix', (test) => {
+  udpTransportTest.test('should split only big messages', (test) => {
     const udpTransport = new UdpTransport({ id: '00112233445566778899aabbccddeeff' })
+    const socketSendStub = sinon.stub(dgram.Socket.prototype, 'send').callsFake((msg, port, host, callback) => {
+      callback(null)
+    })
     udpTransport._stream.write({ message: 'test' }, 'utf8', () => {})
-    udpTransport._stream.write({ bigmessage: '0'.repeat(1500) }, 'utf8', () => {})
-
-    test.end()
+    udpTransport._stream.write('0'.repeat(1500), 'utf8', () => {
+      test.ok(socketSendStub.calledThrice, 'socket.send should be called thrice')
+      test.deepEqual(socketSendStub.firstCall.args[0].slice(0, 16), Buffer.from('00112233445566778899aabbccddeeff', 'hex'), 'match the expected id')
+      test.deepEqual(socketSendStub.firstCall.args[0].slice(16), Buffer.from(JSON.stringify({ message: 'test' }) + '\n', 'utf8'), 'match the full message')
+      test.deepEqual(socketSendStub.secondCall.args[0].slice(0, 16), Buffer.from('00112233445566778899aabbccddeeff', 'hex'), 'match the expected id')
+      test.deepEqual(socketSendStub.secondCall.args[0].slice(16), Buffer.from('"' + '0'.repeat(1400 - 16 - 1)), 'match first part of the message')
+      test.deepEqual(socketSendStub.thirdCall.args[0].slice(0, 16), Buffer.from('00112233445566778899aabbccddeeff', 'hex'), 'match the expected id')
+      test.deepEqual(socketSendStub.thirdCall.args[0].slice(16), Buffer.from('0'.repeat(100 + 16 + 1) + '"\n'), 'match the second part of the message')
+      socketSendStub.restore()
+      test.end()
+    })
   })
 
   udpTransportTest.test('should skip big messages', (test) => {
     const udpTransport = new UdpTransport({ max: 10 })
-    udpTransport._stream.write({ message: 'test' }, 'utf8', () => {})
-
-    test.end()
+    const socketSendStub = sinon.stub(dgram.Socket.prototype, 'send').callsFake((msg, port, host, callback) => {
+      callback(null)
+    })
+    udpTransport._stream.write({ message: 'test' }, 'utf8', () => {
+      test.ok(socketSendStub.notCalled, 'socket.send should not be called')
+      socketSendStub.restore()
+      test.end()
+    })
   })
 
   udpTransportTest.test('should handle errors', (test) => {
     const udpTransport = new UdpTransport({ max: 10 })
     udpTransport._stream.emit('error', new Error('test'))
     udpTransport._stream.end(new Error('test'))
-
     test.end()
   })
 
@@ -49,22 +64,6 @@ Test('UdpTransport', (udpTransportTest) => {
     udpTransport._stream.write({ message: 'test' }, 'utf8', () => {})
 
     test.end()
-  })
-
-  udpTransportTest.test('should send correct UDP data', (test) => {
-    const udpTransport = new UdpTransport()
-    const socketSendStub = sinon.stub(dgram.Socket.prototype, 'send').callsFake((msg, port, host, callback) => {
-      callback(null)
-    })
-
-    const message = { message: 'test' }
-    udpTransport._stream.write(message, 'utf8', () => {
-      const sentMessage = Buffer.from(JSON.stringify(message) + '\n', 'utf8')
-      test.ok(socketSendStub.calledOnce, 'socket.send should be called once')
-      test.deepEqual(socketSendStub.firstCall.args[0].slice(udpTransport._stream.id.length), sentMessage, 'sent message should match the expected message')
-      socketSendStub.restore()
-      test.end()
-    })
   })
 
   udpTransportTest.end()
