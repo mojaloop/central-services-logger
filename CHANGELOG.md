@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.6.2](https://github.com/mojaloop/central-services-logger/compare/v11.6.1...v11.6.2) (2025-03-12)
+
+
+### Bug Fixes
+
+* update stream import to use node:stream ([#60](https://github.com/mojaloop/central-services-logger/issues/60)) ([dab621a](https://github.com/mojaloop/central-services-logger/commit/dab621ada6ec277acac37e0010489f179d4c8b42))
+
 ### [11.6.1](https://github.com/mojaloop/central-services-logger/compare/v11.6.0...v11.6.1) (2025-03-11)
 
 
