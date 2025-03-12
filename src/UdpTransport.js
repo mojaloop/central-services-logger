@@ -1,5 +1,5 @@
 const udp = require('dgram')
-const stream = require('readable-stream')
+const stream = require('node:stream')
 const crypto = require('crypto')
 const winston = require('winston')
 
