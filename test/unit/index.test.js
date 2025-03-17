@@ -1,4 +1,4 @@
-'use strict'
+process.env.CSL_LOG_LEVEL = 'info'
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
@@ -135,12 +135,12 @@ Test('contextual logger', function (loggerTest) {
     assert.end()
   })
 
-  loggerTest.test('console stream ignores expected errors', function (assert) {
+  loggerTest.test('console stream logs expected errors at error level', function (assert) {
     const logger = Logger.child()
     const error = new Error('test')
     error.expected = true
     logger.error('Message', error)
-    assert.ok(process.stdout.write.notCalled, 'expected error not logged')
+    assert.ok(process.stdout.write.firstCall.args[0].includes('error'), 'expected error is logged at error level')
     assert.end()
   })
 

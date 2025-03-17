@@ -34,7 +34,9 @@
 
 const { propagation } = require('@opentelemetry/api')
 const { createLogger, format, transports: winstonTransports } = require('winston')
-const { customLevels, level, logTransport, transportFileOptions } = require('./lib/config')
+const { LEVEL } = require('triple-beam')
+const config = require('./lib/config')
+const { customLevels, level, logTransport, transportFileOptions } = config
 const { allLevels } = require('./lib/constants')
 const UdpTransport = require('./UdpTransport')
 const ConsoleTransport = require('./ConsoleTransport')
@@ -45,11 +47,20 @@ const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !custo
 // Expected errors are indicated in the request header
 // baggage: errorExpect=<context>.<errorCode>|<context>.<errorCode>
 const errorExpect = format(info => {
-  if (info.level === 'error' && info.apiErrorCode?.code && info.context) {
+  if (['error', 'warn', 'fatal'].includes(info.level) && info.apiErrorCode?.code && info.context) {
     const errorExpect = propagation.getActiveBaggage()?.getEntry('errorExpect')
     if (errorExpect) {
       const expected = `${info.context}.${info.apiErrorCode.code}`
-      if (errorExpect.value.split('|').includes(expected)) return { ...info, expected }
+      if (errorExpect.value.split('|').includes(expected)) {
+        return {
+          ...info,
+          expected,
+          ...typeof config.expectedErrorLevel === 'string' && {
+            [LEVEL]: config.expectedErrorLevel,
+            level: config.expectedErrorLevel
+          }
+        }
+      }
     }
   }
   return info

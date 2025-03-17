@@ -70,6 +70,7 @@
     "parse-strings-in-object": "2.0.0",
     "rc": "1.2.8",
     "safe-stable-stringify": "^2.5.0",
+    "triple-beam": "1.4.1",
     "winston": "3.17.0"
   },
   "devDependencies": {

@@ -2,6 +2,7 @@
   "LOG_LEVEL": "info",
   "LOG_FILTER": "",
   "LOG_TRANSPORT": "console",
+  "EXPECTED_ERROR_LEVEL": "info",
   "TRANSPORT_FILE_OPTIONS": {
     "json": false,
     "timestamp": true,

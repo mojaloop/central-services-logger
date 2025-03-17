@@ -1,3 +1,5 @@
+process.env.CSL_LOG_LEVEL = 'info'
+
 const Sinon = require('sinon')
 const Test = require('tapes')(require('tape'))
 const { ContextLogger } = require('../../src/contextLogger')
