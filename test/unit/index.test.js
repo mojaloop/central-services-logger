@@ -135,5 +135,14 @@ Test('contextual logger', function (loggerTest) {
     assert.end()
   })
 
+  loggerTest.test('console stream ignores expected errors', function (assert) {
+    const logger = Logger.child()
+    const error = new Error('test')
+    error.expected = true
+    logger.error('Message', error)
+    assert.ok(process.stdout.write.notCalled, 'expected error not logged')
+    assert.end()
+  })
+
   loggerTest.end()
 })

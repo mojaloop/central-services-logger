@@ -32,6 +32,7 @@
 
 'use strict'
 
+const { propagation } = require('@opentelemetry/api')
 const { createLogger, format, transports: winstonTransports } = require('winston')
 const { customLevels, level, logTransport, transportFileOptions } = require('./lib/config')
 const { allLevels } = require('./lib/constants')
@@ -40,6 +41,19 @@ const ConsoleTransport = require('./ConsoleTransport')
 
 const customLevelsArr = customLevels.split(',').map(l => l.trim()).filter(Boolean)
 const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !customLevelsArr.includes(key)) : []
+
+// Expected errors are indicated in the request header
+// baggage: errorExpect=<context>.<errorCode>|<context>.<errorCode>
+const errorExpect = format(info => {
+  if (info.level === 'error' && info.apiErrorCode?.code && info.context) {
+    const errorExpect = propagation.getActiveBaggage()?.getEntry('errorExpect')
+    if (errorExpect) {
+      const expected = `${info.context}.${info.apiErrorCode.code}`
+      if (errorExpect.value.split('|').includes(expected)) return { ...info, expected }
+    }
+  }
+  return info
+})
 
 const transportsMap = {
   console: ConsoleTransport,
@@ -60,7 +74,10 @@ const createMlLogger = () => {
   const Logger = createLogger({
     level,
     levels: allLevels,
-    format: format.timestamp(),
+    format: format.combine(
+      format.timestamp(),
+      errorExpect()
+    ),
     transports,
     exceptionHandlers: transports,
     exitOnError: false
