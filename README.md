@@ -20,6 +20,7 @@ Edit the file in `./config/default.json` to configure the logger, or set the fol
 | `CSL_LOG_TRANSPORT` | Selects the transport method. Either `console`, `file` or a map for multiple transports. Uses the same transport for errors and standard logs | `console` | `console`, `file`, `{}` |
 | `CSL_TRANSPORT_FILE_OPTIONS` | _Optional._ Required if `LOG_TRANSPORT=file`. Configures the winston file transport | See `default.json` | See the [Winston Docs](https://github.com/winstonjs/winston#common-transport-options) |
 | `CSL_JSON_STRINGIFY_SPACING` |  _Optional._  A number that's used to insert white space into the output JSON string for readability purposes. | 2 | integer
+| `EXPECTED_ERROR_LEVEL` | Set log level for expected errors or turn off console logging when `false` | `info` | Log levels, `false` |
 
 ### Configuring multiple transports
 

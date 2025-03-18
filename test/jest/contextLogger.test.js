@@ -1,4 +1,6 @@
 /* eslint-env jest */
+process.env.CSL_LOG_LEVEL = 'info'
+
 const { loggerFactory, asyncStorage, ContextLogger } = require('../../src/contextLogger')
 const Logger = require('../../src/index.js')
 

@@ -124,12 +124,14 @@ class ContextLogger {
   }
 
   static formatError(error) {
-    const { message, stack, code, cause } = error
+    const { message, stack, code, cause, expected, apiErrorCode } = error
 
     return {
       message,
       ...(stack && { stack }),
       ...(code && { code }),
+      ...(expected && { expected }),
+      ...(apiErrorCode && { apiErrorCode }),
       ...(cause instanceof Error && { cause: ContextLogger.formatError(cause) })
     }
   }

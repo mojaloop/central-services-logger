@@ -20,15 +20,16 @@
   },
   "homepage": "https://github.com/mojaloop/central-services-logger#readme",
   "scripts": {
-    "test": "npm run test:jest  &&  npm run test:unit",
+    "test": "npm run test:jest && npm run test:otel && npm run test:unit",
     "pretest": "standard",
     "standard": "standard",
     "standard:fix": "standard --fix",
     "lint": "npm run standard",
     "lint:fix": "npm run standard:fix",
     "test:jest": "jest",
+    "test:otel": "tapes 'test/unit/**/*.otel.js' | tap-spec",
     "test:unit": "tapes 'test/unit/**/**.test.js' | tap-spec",
-    "test:xunit": "npm run test:jest && tapes 'test/unit/**/**.test.js' | tap-xunit > ./test/results/xunit.xml",
+    "test:xunit": "npm run test:jest && npm run test:otel && tapes 'test/unit/**/**.test.js' | tap-xunit > ./test/results/xunit.xml",
     "test:coverage": "nyc --reporter=lcov --reporter=text-summary tapes -- 'test/unit/**/**.test.js'",
     "test:coverage-check": "npm run test:coverage && nyc check-coverage",
     "audit:fix": "npm audit fix",
@@ -65,12 +66,15 @@
     "trim": "0.0.3"
   },
   "dependencies": {
+    "@opentelemetry/api": "1.9.0",
     "parse-strings-in-object": "2.0.0",
     "rc": "1.2.8",
     "safe-stable-stringify": "^2.5.0",
+    "triple-beam": "1.4.1",
     "winston": "3.17.0"
   },
   "devDependencies": {
+    "@opentelemetry/auto-instrumentations-node": "^0.56.1",
     "@types/node": "22.13.10",
     "audit-ci": "^7.1.0",
     "husky": "9.1.7",
