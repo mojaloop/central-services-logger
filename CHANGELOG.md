@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [11.7.0](https://github.com/mojaloop/central-services-logger/compare/v11.6.2...v11.7.0) (2025-03-18)
+
+
+### Features
+
+* enhance logging to handle expected errors and update tests ([#61](https://github.com/mojaloop/central-services-logger/issues/61)) ([9265a4a](https://github.com/mojaloop/central-services-logger/commit/9265a4a76641f8d24754bbd40a78ea13ceb11d7e))
+
 ### [11.6.2](https://github.com/mojaloop/central-services-logger/compare/v11.6.1...v11.6.2) (2025-03-12)
 
 
