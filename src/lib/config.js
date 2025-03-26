@@ -5,7 +5,7 @@ const Config = {
   customLevels: process.env.LOG_FILTER || RC.LOG_FILTER,
   level: process.env.LOG_LEVEL || RC.LOG_LEVEL,
   expectedErrorLevel: RC.EXPECTED_ERROR_LEVEL,
-  logTransport: RC.LOG_TRANSPORT,
+  logTransport: RC.LOG_TRANSPORT?.startsWith('{') ? JSON.parse(RC.LOG_TRANSPORT) : RC.LOG_TRANSPORT,
   transportFileOptions: RC.TRANSPORT_FILE_OPTIONS,
   jsonStringifySpacing: RC.JSON_STRINGIFY_SPACING
 }
