@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [11.8.0](https://github.com/mojaloop/central-services-logger/compare/v11.7.0...v11.8.0) (2025-03-26)
+
+
+### Features
+
+* enable passing objects in CSL_LOG_TRANSPORT ([#62](https://github.com/mojaloop/central-services-logger/issues/62)) ([1692da6](https://github.com/mojaloop/central-services-logger/commit/1692da6d3e35a5d150783bfe55d76ac789e59d9c))
+
 ## [11.7.0](https://github.com/mojaloop/central-services-logger/compare/v11.6.2...v11.7.0) (2025-03-18)
 
 
