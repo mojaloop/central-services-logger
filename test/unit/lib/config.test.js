@@ -12,6 +12,7 @@ Test('config', (configTest) => {
   configTest.afterEach(t => {
     delete process.env.LOG_LEVEL
     delete process.env.LOG_FILTER
+    delete process.env.LOG_TRANSPORT
     sandbox.restore()
 
     t.end()
@@ -38,6 +39,18 @@ Test('config', (configTest) => {
 
     // Assert
     assert.equal(config.customLevels, 'info,debug', 'Log levels match')
+    assert.end()
+  })
+
+  configTest.test('process.env.LOG_TRANSPORT object parsed', assert => {
+    // Arrange
+    process.env.CSL_LOG_TRANSPORT = '{"console":{"type":"console"}}'
+
+    // Act
+    const config = Proxyquire('../../../src/lib/config', {})
+    console.log(config)
+    // Assert
+    assert.equal(config.logTransport.console.type, 'console', 'Object parsed correctly')
     assert.end()
   })
 
