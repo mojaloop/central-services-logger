@@ -2,6 +2,7 @@ const udp = require('dgram')
 const stream = require('node:stream')
 const crypto = require('crypto')
 const winston = require('winston')
+const stringify = require('safe-stable-stringify')
 
 class UdpStream extends stream.Writable {
   constructor (config) {
@@ -31,7 +32,7 @@ class UdpStream extends stream.Writable {
     this.id = this.createId()
     this.mtu = this.config.mtu - this.id.length
     this.socket.on('message', this.handleMessage.bind(this))
-    this.on('error', () => console.error) // ignore udp errors
+    this.on('error', console.error) // ignore udp errors
   }
 
   handleMessage (msg) {
@@ -44,37 +45,41 @@ class UdpStream extends stream.Writable {
   }
 
   _write (message, encoding, done) {
-    message = Buffer.from(JSON.stringify(message) + '\n', encoding)
+    try {
+      message = Buffer.from(stringify(message) + '\n', encoding)
 
-    if (this.max && message && message.length > this.max) {
-      done()
-      return
-    }
-    const id = this.id.subarray()
-    const send = (start, length, cb) => {
-      this.socket.send(Buffer.concat([id, message.slice(start, start + length)]), this.port, this.host, cb)
-    }
-    const callback = err => {
-      if (err) {
-        console.error(err)
-        this.createSocket()
+      if (this.max && message && message.length > this.max) {
+        done()
+        return
       }
-      done()
-    }
-    const sendFrame = (start, length) => {
-      if (start + length >= message.length) {
-        send(start, message.length - start, callback)
-      } else {
-        send(start, length, err => {
-          if (err) {
-            callback(err)
-          } else {
-            setImmediate(() => sendFrame(start + length, length))
-          }
-        })
+      const id = this.id.subarray()
+      const send = (start, length, cb) => {
+        this.socket.send(Buffer.concat([id, message.slice(start, start + length)]), this.port, this.host, cb)
       }
+      const callback = err => {
+        if (err) {
+          console.error(err)
+          this.createSocket()
+        }
+        done()
+      }
+      const sendFrame = (start, length) => {
+        if (start + length >= message.length) {
+          send(start, message.length - start, callback)
+        } else {
+          send(start, length, err => {
+            if (err) {
+              callback(err)
+            } else {
+              setImmediate(() => sendFrame(start + length, length))
+            }
+          })
+        }
+      }
+      sendFrame(0, this.mtu)
+    } catch (error) {
+      done(error)
     }
-    sendFrame(0, this.mtu)
   }
 
   _destroy (error, callback) {
