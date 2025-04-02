@@ -30,4 +30,3 @@
 
  declare const createLogger: () => WinstonLogger
  export = { createLogger }
- 

@@ -37,7 +37,8 @@ const createMlLogger = require('./createMlLogger')
 let Logger
 
 const createLogger = (forceNewInstance = false) => {
-  if (Logger && !forceNewInstance) return Logger
+  if (forceNewInstance) return createMlLogger()
+  if (Logger) return Logger
   Logger = createMlLogger()
   return Logger
 }

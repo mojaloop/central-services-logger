@@ -4,9 +4,11 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Winston = require('winston')
 const Proxyquire = require('proxyquire')
-const Logger = require('../../src/index').createLogger()
+const { createLogger } = require('../../src/index')
 const config = require('../../src/lib/config')
 const stringify = require('safe-stable-stringify')
+
+const Logger = createLogger()
 
 Test('logger', function (loggerTest) {
   let sandbox
@@ -31,6 +33,12 @@ Test('logger', function (loggerTest) {
   loggerTest.afterEach(t => {
     sandbox.restore()
     t.end()
+  })
+
+  loggerTest.test('createLogger', function (assert) {
+    assert.ok(createLogger(true) !== Logger)
+    assert.ok(createLogger() === Logger)
+    assert.end()
   })
 
   loggerTest.test('configure Winston', function (assert) {
