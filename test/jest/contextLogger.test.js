@@ -2,7 +2,7 @@
 process.env.CSL_LOG_LEVEL = 'info'
 
 const { loggerFactory, asyncStorage, ContextLogger } = require('../../src/contextLogger')
-const Logger = require('../../src/index.js')
+const Logger = require('../../src/index.js').createLogger()
 
 describe('contextLogger Tests -->', () => {
   let log

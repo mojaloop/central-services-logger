@@ -28,5 +28,5 @@
  ******/
 import { Logger as WinstonLogger } from 'winston'
 
-declare const Logger: WinstonLogger
-export = Logger
+declare const createLogger: () => WinstonLogger
+export = { createLogger }
