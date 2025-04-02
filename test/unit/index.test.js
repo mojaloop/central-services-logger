@@ -35,14 +35,14 @@ Test('logger', function (loggerTest) {
     t.end()
   })
 
-  loggerTest.test('createLogger', function (assert) {
-    assert.ok(createLogger(true) !== Logger)
-    assert.ok(createLogger() === Logger)
+  loggerTest.test('configure Winston', function (assert) {
+    assert.ok(Winston.transports.Console, Sinon.match({ timestamp: true, colorize: true }))
     assert.end()
   })
 
-  loggerTest.test('configure Winston', function (assert) {
-    assert.ok(Winston.transports.Console, Sinon.match({ timestamp: true, colorize: true }))
+  loggerTest.test('createLogger', function (assert) {
+    const newLogger = createLogger(true)
+    assert.ok(newLogger !== Logger)
     assert.end()
   })
 
