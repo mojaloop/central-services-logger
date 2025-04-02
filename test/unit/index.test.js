@@ -43,6 +43,8 @@ Test('logger', function (loggerTest) {
   loggerTest.test('createLogger', function (assert) {
     const newLogger = createLogger(true)
     assert.ok(newLogger !== Logger)
+    const oldLogger = createLogger()
+    assert.ok(oldLogger === Logger)
     assert.end()
   })
 
