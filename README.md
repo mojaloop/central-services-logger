@@ -17,11 +17,52 @@ Edit the file in `./config/default.json` to configure the logger, or set the fol
 | `CSL_LOG_LEVEL` | Sets the log level | `info` | `error`, `warn`, `audit`, `trace`, `info`, `perf`, `verbose`, `debug`, `silly` |
 | `LOG_FILTER` | Also `CSL_LOG_FILTER` | `""` | e.g. `"error, trace, verbose" |
 | `CSL_LOG_FILTER` | Applies a log filter. Specify a comma separated list of individual log levels to be included instead of specifying a `LOG_LEVEL` | `""` | e.g. `"error, trace, verbose" |
-| `CSL_LOG_TRANSPORT` | Selects the transport method. Either `console` or `file`. Uses the same transport for errors and standard logs | `console` | `console`, `file`
+| `CSL_LOG_TRANSPORT` | Selects the transport method. Either `console`, `file` or a map for multiple transports. Uses the same transport for errors and standard logs | `console` | `console`, `file`, `{}` |
 | `CSL_TRANSPORT_FILE_OPTIONS` | _Optional._ Required if `LOG_TRANSPORT=file`. Configures the winston file transport | See `default.json` | See the [Winston Docs](https://github.com/winstonjs/winston#common-transport-options) |
 | `CSL_JSON_STRINGIFY_SPACING` |  _Optional._  A number that's used to insert white space into the output JSON string for readability purposes. | 2 | integer
+| `EXPECTED_ERROR_LEVEL` | Set log level for expected errors or turn off console logging when `false` | `info` | Log levels, `false` |
 
+### Configuring multiple transports
 
+The `CSL_LOG_TRANSPORT` environment variable can be set to a JSON object to
+configure multiple transports. The key names can be any string, and the values
+should be objects that contain the transport type and configuration, e.g.:
+
+```json
+{
+  "stdout": {
+    "type": "console"
+  },
+  "fluentbit": {
+    "type": "udp",
+    "host": "fluentbit"
+  },
+  "combined": {
+    "type": "file",
+    "filename": "combined.log"
+  }
+}
+```
+
+### UDP Transport
+
+The `udp` transport is a custom transport that sends logs to a remote server
+via UDP. The following configuration options are available:
+
+| Option     | Description                                     | Default   | Required |
+| ---        | ---                                             | ---       | ---      |
+| `host`     | The hostname or IP address of the remote server | localhost | No       |
+| `port`     | The port number of the remote server            | 5170      | No       |
+| `mtu`      | The maximum size of a single packet in bytes    | 1400      | No       |
+| `max`      | The maximum size of logged message              | 4096      | No       |
+| `id`       | Optional id to put in front of each packet      | false     | No       |
+
+- Messages above the `max` size will not be sent.
+- `id` is useful for identifying the source of the logs on the remote server.
+  It can be set to `true` to generate a random id, or a hex string to use a
+  specific id.
+- `mtu` should be set to the maximum packet size that the network can handle.
+  Messages that are too large will be split into multiple network packets.
 
 ## Usage
 
@@ -54,12 +95,12 @@ By default, the Logger class is setup to log to the console only, with timestamp
 
 ## Auditing Dependencies
 
-We use `npm-audit-resolver` along with `npm audit` to check dependencies for node vulnerabilities, and keep track of resolved dependencies with an `audit-resolve.json` file.
+We use `audit-ci` along with `npm audit` to check dependencies for node vulnerabilities, and keep track of resolved dependencies with an `audit-ci.jsonc` file.
 
 To start a new resolution process, run:
 
 ```bash
-npm run audit:resolve
+npm run audit:fix
 ```
 
 You can then check to see if the CI will pass based on the current dependencies with:
@@ -68,7 +109,7 @@ You can then check to see if the CI will pass based on the current dependencies 
 npm run audit:check
 ```
 
-And commit the changed `audit-resolve.json` to ensure that CircleCI will build correctly.
+The [audit-ci.jsonc](./audit-ci.jsonc) contains any audit-exceptions that cannot be fixed to ensure that CircleCI will build correctly.
 
 ## Contextual Logging
 

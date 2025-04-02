@@ -6,11 +6,13 @@ const Proxyquire = require('proxyquire')
 
 const config = require('../../../src/lib/config')
 
-const sandbox = Sinon.createSandbox()
 Test('config', (configTest) => {
+  const sandbox = Sinon.createSandbox()
+
   configTest.afterEach(t => {
     delete process.env.LOG_LEVEL
     delete process.env.LOG_FILTER
+    delete process.env.LOG_TRANSPORT
     sandbox.restore()
 
     t.end()
@@ -40,6 +42,18 @@ Test('config', (configTest) => {
     assert.end()
   })
 
+  configTest.test('process.env.LOG_TRANSPORT object parsed', assert => {
+    // Arrange
+    process.env.CSL_LOG_TRANSPORT = '{"console":{"type":"console"}}'
+
+    // Act
+    const config = Proxyquire('../../../src/lib/config', {})
+    console.log(config)
+    // Assert
+    assert.equal(config.logTransport.console.type, 'console', 'Object parsed correctly')
+    assert.end()
+  })
+
   configTest.test('Fails to init when LOG_TRANSPORT=file, but filename is not set', assert => {
     // Arrange
     const customConfig = {
@@ -53,9 +67,10 @@ Test('config', (configTest) => {
 
     // Act
     try {
-      Proxyquire('../../../src/index', {
+      const createMlLogger = Proxyquire('../../../src/createMlLogger', {
         './lib/config': customConfig
       })
+      createMlLogger()
       assert.fail('should have thrown error')
     } catch (err) {
       // Assert
@@ -95,9 +110,10 @@ Test('config', (configTest) => {
     }
 
     // Act
-    const LoggerProxy = Proxyquire('../../../src/index', {
+    const createMlLogger = Proxyquire('../../../src/createMlLogger', {
       './lib/config': customConfig
     })
+    const LoggerProxy = createMlLogger()
 
     // Assert
     assert.equal(LoggerProxy.transports[0].name, 'file', 'Transport is file')

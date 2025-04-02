@@ -1,4 +1,4 @@
-'use strict'
+process.env.CSL_LOG_LEVEL = 'info'
 
 const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
@@ -102,10 +102,10 @@ Test('contextual logger', function (loggerTest) {
   })
 
   loggerTest.test('logger with context formats message properly', function (assert) {
-    const logger = Logger.child({ context: { a: 1 } })
+    const logger = Logger.child({ a: 1 })
     logger.info('Message')
-    assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === stringify(
-      { a: 1, message: 'Message' },
+    assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === 'Message -\t' + stringify(
+      { a: 1 },
       null,
       config.jsonStringifySpacing) + '\n')
     assert.end()
@@ -119,10 +119,10 @@ Test('contextual logger', function (loggerTest) {
       obj1
     }
     obj1.newobj2 = obj2
-    const logger = Logger.child({ context: { a: obj2 } })
+    const logger = Logger.child({ a: obj2 })
     logger.info('Message')
-    assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === stringify(
-      { a: obj2, message: 'Message' },
+    assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === 'Message -\t' + stringify(
+      { a: obj2 },
       null,
       config.jsonStringifySpacing) + '\n')
     assert.end()
@@ -131,7 +131,16 @@ Test('contextual logger', function (loggerTest) {
   loggerTest.test('logger without context formats message properly', function (assert) {
     const logger = Logger.child()
     logger.info('Message')
-    assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === '"Message"\n')
+    assert.ok(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1] === 'Message\n')
+    assert.end()
+  })
+
+  loggerTest.test('console stream logs expected errors at error level', function (assert) {
+    const logger = Logger.child()
+    const error = new Error('test')
+    error.expected = true
+    logger.error('Message', error)
+    assert.ok(process.stdout.write.firstCall.args[0].includes('error'), 'expected error is logged at error level')
     assert.end()
   })
 

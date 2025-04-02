@@ -2,6 +2,7 @@
   "LOG_LEVEL": "info",
   "LOG_FILTER": "",
   "LOG_TRANSPORT": "console",
+  "EXPECTED_ERROR_LEVEL": "info",
   "TRANSPORT_FILE_OPTIONS": {
     "json": false,
     "timestamp": true,
@@ -9,5 +10,5 @@
     "colorize": true,
     "filename": "logs/combined.log"
   },
-  "JSON_STRINGIFY_SPACING": 2
+  "JSON_STRINGIFY_SPACING": 0
 }
