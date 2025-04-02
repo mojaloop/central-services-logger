@@ -4,7 +4,7 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Winston = require('winston')
 const Proxyquire = require('proxyquire')
-const Logger = require('../../src/index')
+const Logger = require('../../src/index').createLogger()
 const config = require('../../src/lib/config')
 const stringify = require('safe-stable-stringify')
 
@@ -50,9 +50,11 @@ Test('logger', function (loggerTest) {
       ...config,
       customLevels: 'info, debug'
     }
-    const LoggerProxy = Proxyquire('../../src/index', {
+    const createLoggerProxy = Proxyquire('../../src/index', {
       './lib/config': customConfig
     })
+
+    const LoggerProxy = createLoggerProxy.createLogger()
 
     // Act
     LoggerProxy.error('test %s', 'me')
