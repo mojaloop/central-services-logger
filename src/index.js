@@ -38,7 +38,7 @@ let Logger
 
 const createLogger = () => {
   if (Logger) return Logger
-  Logger = Object.freeze(createMlLogger())
+  Logger = createMlLogger()
   return Logger
 }
 
