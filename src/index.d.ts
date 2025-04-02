@@ -28,5 +28,5 @@
  ******/
  import { WinstonLogger } from 'winston'
 
- declare const createLogger: () => WinstonLogger
+ declare const createLogger: ( forceNewInstance?: boolean ) => WinstonLogger
  export = { createLogger }
