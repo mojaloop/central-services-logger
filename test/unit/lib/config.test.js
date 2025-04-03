@@ -89,9 +89,11 @@ Test('config', (configTest) => {
     }
 
     // Act
-    const LoggerProxy = Proxyquire('../../../src/index', {
+    const createLoggerProxy = Proxyquire('../../../src/index', {
       './lib/config': customConfig
     })
+
+    const LoggerProxy = createLoggerProxy.createLogger()
 
     // Assert
     assert.equal(LoggerProxy.transports[0].name, 'console', 'Transport is console')

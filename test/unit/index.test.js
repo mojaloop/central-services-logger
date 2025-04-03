@@ -4,9 +4,11 @@ const Test = require('tapes')(require('tape'))
 const Sinon = require('sinon')
 const Winston = require('winston')
 const Proxyquire = require('proxyquire')
-const Logger = require('../../src/index')
+const { createLogger } = require('../../src/index')
 const config = require('../../src/lib/config')
 const stringify = require('safe-stable-stringify')
+
+const Logger = createLogger()
 
 Test('logger', function (loggerTest) {
   let sandbox
@@ -38,6 +40,14 @@ Test('logger', function (loggerTest) {
     assert.end()
   })
 
+  loggerTest.test('createLogger', function (assert) {
+    const newLogger = createLogger(true)
+    assert.ok(newLogger)
+    const oldLogger = createLogger()
+    assert.ok(oldLogger)
+    assert.end()
+  })
+
   loggerTest.test('log debug level', function (assert) {
     Logger.debug('test %s', 'me')
     assert.ok(Sinon.match('debug', 'test me'))
@@ -50,9 +60,11 @@ Test('logger', function (loggerTest) {
       ...config,
       customLevels: 'info, debug'
     }
-    const LoggerProxy = Proxyquire('../../src/index', {
+    const createLoggerProxy = Proxyquire('../../src/index', {
       './lib/config': customConfig
     })
+
+    const LoggerProxy = createLoggerProxy.createLogger()
 
     // Act
     LoggerProxy.error('test %s', 'me')

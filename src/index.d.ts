@@ -26,7 +26,7 @@
  - Vijaya Kumar Guthi <vijaya.guthi@modusbox.com>
  --------------
  ******/
-import { Logger as WinstonLogger } from 'winston'
+ import { WinstonLogger } from 'winston'
 
-declare const Logger: WinstonLogger
-export = Logger
+ declare const createLogger: ( forceNewInstance?: boolean ) => WinstonLogger
+ export = { createLogger }
