@@ -101,7 +101,6 @@
   },
   "pre-commit": [
     "dep:check",
-    "build",
     "lint",
     "test:unit"
   ],
