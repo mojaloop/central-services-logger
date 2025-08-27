@@ -149,4 +149,17 @@ describe('contextLogger Tests -->', () => {
     log2.warn('warn')
     expect(spyWarn2).toHaveBeenCalledTimes(2)
   })
+
+  test('should log Axios error response data', () => {
+    const err = new Error('HttpError')
+    err.response = {
+      data: {
+        code: '1001',
+        message: 'test error'
+      }
+    }
+    const spy = jest.spyOn(log.mlLogger, 'error')
+    log.error('http error: ', err)
+    expect(spy.mock.calls[0][1].httpErrorResponse).toEqual(err.response.data)
+  })
 })
