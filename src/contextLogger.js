@@ -124,7 +124,7 @@ class ContextLogger {
   }
 
   static formatError(error) {
-    const { message, stack, code, cause, expected, apiErrorCode } = error
+    const { message, stack, code, cause, expected, apiErrorCode, response } = error
 
     return {
       message,
@@ -132,6 +132,7 @@ class ContextLogger {
       ...(code && { code }),
       ...(expected && { expected }),
       ...(apiErrorCode && { apiErrorCode }),
+      ...(response && { httpErrorResponse: response.data }), // for Axios errors
       ...(cause instanceof Error && { cause: ContextLogger.formatError(cause) })
     }
   }
