@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.9.1](https://github.com/mojaloop/central-services-logger/compare/v11.9.0...v11.9.1) (2025-08-27)
+
+
+### Bug Fixes
+
+* **csi-1682:** added httpErrorResponse to log ([#68](https://github.com/mojaloop/central-services-logger/issues/68)) ([fdffd21](https://github.com/mojaloop/central-services-logger/commit/fdffd2165c28232513dfc77ff35cd1b668fc20ae))
+
 ## [11.9.0](https://github.com/mojaloop/central-services-logger/compare/v11.8.1...v11.9.0) (2025-05-15)
 
 
