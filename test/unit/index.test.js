@@ -144,5 +144,61 @@ Test('contextual logger', function (loggerTest) {
     assert.end()
   })
 
+  loggerTest.test('redacts sensitive keys in context', function (assert) {
+    const logger = Logger.child({
+      password: 'supersecret',
+      token: 'abc123',
+      nested: { apiKey: 'shouldBeRedacted', normal: 'notRedacted' }
+    })
+    logger.info('Sensitive info')
+    const output = process.stdout.write.firstCall.args[0]
+    assert.ok(output.includes('"password":"[REDACTED]"'), 'password is redacted')
+    assert.ok(output.includes('"token":"[REDACTED]"'), 'token is redacted')
+    assert.ok(output.includes('"apiKey":"[REDACTED]"'), 'apiKey is redacted')
+    assert.ok(output.includes('"normal":"notRedacted"'), 'normal is not redacted')
+    assert.end()
+  })
+
+  loggerTest.test('redacts sensitive values in context', function (assert) {
+    const logger = Logger.child({
+      info: 'my password is hunter2',
+      another: 'Bearer abcdefg',
+      normal: 'safe'
+    })
+    logger.info('Sensitive values')
+    const output = process.stdout.write.firstCall.args[0]
+    assert.ok(output.includes('"info":"[REDACTED]"'), 'password in value is redacted')
+    assert.ok(output.includes('"another":"[REDACTED]"'), 'bearer token is redacted')
+    assert.ok(output.includes('"normal":"safe"'), 'normal is not redacted')
+    assert.end()
+  })
+
+  loggerTest.test('does not redact non-sensitive keys/values', function (assert) {
+    const logger = Logger.child({
+      foo: 'bar',
+      hello: 'world'
+    })
+    logger.info('Non-sensitive')
+    const output = process.stdout.write.firstCall.args[0]
+    assert.ok(output.includes('"foo":"bar"'), 'foo is not redacted')
+    assert.ok(output.includes('"hello":"world"'), 'hello is not redacted')
+    assert.end()
+  })
+
+  loggerTest.test('redacts sensitive info in arrays', function (assert) {
+    const logger = Logger.child({
+      arr: [
+        { password: '1234' },
+        { token: 'abcd' },
+        { normal: 'ok' }
+      ]
+    })
+    logger.info('Sensitive in array')
+    const output = process.stdout.write.firstCall.args[0]
+    assert.ok(output.includes('"password":"[REDACTED]"'), 'password in array is redacted')
+    assert.ok(output.includes('"token":"[REDACTED]"'), 'token in array is redacted')
+    assert.ok(output.includes('"normal":"ok"'), 'normal in array is not redacted')
+    assert.end()
+  })
   loggerTest.end()
 })
