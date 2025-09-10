@@ -50,9 +50,6 @@ const SENSITIVE_VALUE_PATTERNS = Object.freeze([
   /client[_-]?id/i,
   /auth[_-]?token/i,
   /credential/i,
-  /\b\d{12,19}\b/, // possible credit card numbers
-  /\b\d{3,4}\b/, // possible CVV
-  /\b\d{9}\b/, // possible SSN
   /pin/i,
   /passphrase/i,
   /account[_-]?number/i,
