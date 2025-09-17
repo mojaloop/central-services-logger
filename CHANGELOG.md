@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [11.10.0](https://github.com/mojaloop/central-services-logger/compare/v11.9.3...v11.10.0) (2025-09-17)
+
+
+### Features
+
+* add grype src scan ([#67](https://github.com/mojaloop/central-services-logger/issues/67)) ([148447d](https://github.com/mojaloop/central-services-logger/commit/148447d4de33bca4153fb29fbfb02bc6db0072db))
+
 ### [11.9.3](https://github.com/mojaloop/central-services-logger/compare/v11.9.2...v11.9.3) (2025-09-10)
 
 ### [11.9.2](https://github.com/mojaloop/central-services-logger/compare/v11.9.1...v11.9.2) (2025-09-09)
