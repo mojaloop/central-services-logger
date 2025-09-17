@@ -77,7 +77,7 @@
   },
   "devDependencies": {
     "@opentelemetry/auto-instrumentations-node": "^0.64.1",
-    "@types/node": "24.5.0",
+    "@types/node": "24.5.1",
     "audit-ci": "^7.1.0",
     "axios": "1.12.2",
     "husky": "9.1.7",
