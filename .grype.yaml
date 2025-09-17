@@ -1,4 +1,7 @@
-disabled: true
+disabled: false
+
+# For repos that do not produce a container image, use source scanning
+scan-type: source
 
 ignore:
 
