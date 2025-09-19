@@ -1,12 +1,15 @@
 const stringify = require('safe-stable-stringify')
 const config = require('./lib/config')
-const { SENSITIVE_SUBSTRINGS, SENSITIVE_VALUE_PATTERNS } = require('./lib/constants')
+const { SENSITIVE_SUBSTRINGS, SENSITIVE_VALUE_PATTERNS, SENSITIVE_KEY_EXCLUSIONS } = require('./lib/constants')
 
 const { transports: { Console }, format: { combine, colorize, printf }, format } = require('winston')
 
 const customFormat = printf(({ level, message, timestamp, ...rest }) => {
   function isSensitiveKey (key = '') {
     const lowerKey = key.toLowerCase()
+    if (isExcludedKey(lowerKey)) {
+      return false
+    }
     return SENSITIVE_SUBSTRINGS.some(sub => lowerKey.includes(sub))
   }
 
@@ -14,9 +17,17 @@ const customFormat = printf(({ level, message, timestamp, ...rest }) => {
     if (typeof val !== 'string') return false
     return SENSITIVE_VALUE_PATTERNS.some(pattern => pattern.test(val))
   }
+
+  function isExcludedKey (key = '') {
+    const lowerKey = key.toLowerCase()
+    return SENSITIVE_KEY_EXCLUSIONS.includes(lowerKey)
+  }
+
   // Redact sensitive info before logging
-  // const redactedRest = redact(rest)
   const replacer = (key, value) => {
+    if (isExcludedKey(key)) {
+      return value
+    }
     if (isSensitiveKey(key) || isSensitiveValue(value)) {
       return '[REDACTED]'
     }
