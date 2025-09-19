@@ -5,11 +5,8 @@ const { SENSITIVE_SUBSTRINGS, SENSITIVE_VALUE_PATTERNS, SENSITIVE_KEY_EXCLUSIONS
 const { transports: { Console }, format: { combine, colorize, printf }, format } = require('winston')
 
 const customFormat = printf(({ level, message, timestamp, ...rest }) => {
-  function isSensitiveKey (key = '') {
+  function isSensitiveKey (key) {
     const lowerKey = key.toLowerCase()
-    if (isExcludedKey(lowerKey)) {
-      return false
-    }
     return SENSITIVE_SUBSTRINGS.some(sub => lowerKey.includes(sub))
   }
 
@@ -18,7 +15,7 @@ const customFormat = printf(({ level, message, timestamp, ...rest }) => {
     return SENSITIVE_VALUE_PATTERNS.some(pattern => pattern.test(val))
   }
 
-  function isExcludedKey (key = '') {
+  function isExcludedKey (key) {
     const lowerKey = key.toLowerCase()
     return SENSITIVE_KEY_EXCLUSIONS.includes(lowerKey)
   }

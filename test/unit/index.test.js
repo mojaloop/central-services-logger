@@ -164,13 +164,27 @@ Test('contextual logger', function (loggerTest) {
     const logger = Logger.child({
       info: 'my password is hunter2',
       another: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', // JWT
-      normal: 'safe'
+      bearer: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', // Bearer token
+      normal: 'safe',
+      privateKey: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASC...\n-----END PRIVATE KEY-----',
+      rsaPrivateKey: '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA7...\n-----END RSA PRIVATE KEY-----',
+      ecPrivateKey: '-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIB...\n-----END EC PRIVATE KEY-----',
+      certificate: '-----BEGIN CERTIFICATE-----\nMIIDdzCCAl+gAwIBAgIEb...\n-----END CERTIFICATE-----',
+      caCertificate: '-----BEGIN CA CERTIFICATE-----\nMIIDdzCCAl+gAwIBAgIEb...\n-----END CA CERTIFICATE-----',
+      jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
     })
     logger.info('Sensitive values')
     const output = process.stdout.write.firstCall.args[0]
     assert.ok(output.includes('"info":"my password is hunter2"'), 'password in value is not redacted')
     assert.ok(output.includes('"another":"[REDACTED]"'), 'JWT is redacted')
+    assert.ok(output.includes('"bearer":"[REDACTED]"'), 'Bearer token is redacted')
     assert.ok(output.includes('"normal":"safe"'), 'normal is not redacted')
+    assert.ok(output.includes('"privateKey":"[REDACTED]"'), 'PEM private key is redacted')
+    assert.ok(output.includes('"rsaPrivateKey":"[REDACTED]"'), 'RSA private key is redacted')
+    assert.ok(output.includes('"ecPrivateKey":"[REDACTED]"'), 'EC private key is redacted')
+    assert.ok(output.includes('"certificate":"[REDACTED]"'), 'Certificate is redacted')
+    assert.ok(output.includes('"caCertificate":"[REDACTED]"'), 'CA Certificate is redacted')
+    assert.ok(output.includes('"jwt":"[REDACTED]"'), 'JWT pattern is redacted')
     assert.end()
   })
 
