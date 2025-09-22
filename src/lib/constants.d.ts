@@ -9,6 +9,8 @@ declare const allLevels: Readonly<{
     debug: 7;
     silly: 8;
   }>;
-  
-  export { allLevels };
-  
+declare const SENSITIVE_KEY_EXCLUSIONS: ReadonlyArray<string>;
+declare const SENSITIVE_SUBSTRINGS: ReadonlyArray<string>;
+declare const SENSITIVE_VALUE_PATTERNS: ReadonlyArray<RegExp>;
+
+export { allLevels, SENSITIVE_KEY_EXCLUSIONS, SENSITIVE_SUBSTRINGS, SENSITIVE_VALUE_PATTERNS };

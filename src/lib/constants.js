@@ -2,6 +2,11 @@ const allLevels = Object.freeze({
   error: 0, warn: 1, audit: 2, trace: 3, info: 4, perf: 5, verbose: 6, debug: 7, silly: 8
 })
 
+const SENSITIVE_KEY_EXCLUSIONS = Object.freeze([
+  'context',
+  'stack'
+])
+
 const SENSITIVE_SUBSTRINGS = Object.freeze([
   'token',
   'auth',
@@ -18,7 +23,6 @@ const SENSITIVE_SUBSTRINGS = Object.freeze([
   'credential',
   'access',
   'refresh',
-  'pin',
   'ssn',
   'credit_card',
   'card_number',
@@ -31,36 +35,20 @@ const SENSITIVE_SUBSTRINGS = Object.freeze([
 ])
 
 const SENSITIVE_VALUE_PATTERNS = Object.freeze([
+  // Private keys (PEM format)
   /^-----BEGIN (RSA |EC |DSA )?PRIVATE KEY-----/,
   /^-----BEGIN PRIVATE KEY-----/,
+  // Certificates (PEM format)
   /^-----BEGIN (CERTIFICATE|CA CERTIFICATE)-----/,
-  /^eyJ[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+$/, // JWT
-  /password/i,
-  /secret/i,
-  /token/i,
-  /private/i,
-  /key/i,
-  /bearer\s+[a-z0-9-_.]+/i,
-  /sessionid/i,
-  /cookie/i,
-  /api[_-]?key/i,
-  /access[_-]?token/i,
-  /refresh[_-]?token/i,
-  /client[_-]?secret/i,
-  /client[_-]?id/i,
-  /auth[_-]?token/i,
-  /credential/i,
-  /pin/i,
-  /passphrase/i,
-  /account[_-]?number/i,
-  /routing[_-]?number/i,
-  /iban_code/i,
-  /bic/i,
-  /security[_-]?answer/i
+  // JWT tokens (header.payload.signature)
+  /^eyJ[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+$/,
+  // Basic Bearer tokens
+  /\bBearer\s+[A-Za-z0-9\-._~+/]+=*\b/i
 ])
 
 module.exports = {
   allLevels,
   SENSITIVE_SUBSTRINGS,
-  SENSITIVE_VALUE_PATTERNS
+  SENSITIVE_VALUE_PATTERNS,
+  SENSITIVE_KEY_EXCLUSIONS
 }
