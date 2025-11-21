@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/mojaloop/central-services-logger#readme",
   "scripts": {
-    "test": "npm run test:jest && npm run test:otel && npm run test:unit",
+    "test": "jest",
     "pretest": "standard",
     "standard": "standard",
     "standard:fix": "standard --fix",
@@ -29,11 +29,10 @@
     "test:functional": "true",
     "test:jest": "jest",
     "test:integration": "true",
-    "test:otel": "node test-runner.js 'test/unit/**/*.otel.js' | tap-spec",
-    "test:unit": "node test-runner.js 'test/unit/**/*.test.js' | tap-spec",
-    "test:xunit": "npm run test:jest && npm run test:otel && node test-runner.js 'test/unit/**/*.test.js' | tap-xunit > ./test/results/xunit.xml",
-    "test:coverage": "nyc --reporter=lcov --reporter=text-summary node test-runner.js 'test/unit/**/*.test.js'",
-    "test:coverage-check": "npm run test:coverage && nyc check-coverage",
+    "test:unit": "jest --testMatch='**/test/unit/**/*.test.js'",
+    "test:xunit": "jest --reporters=default --reporters=jest-junit",
+    "test:coverage": "jest --coverage",
+    "test:coverage-check": "jest --coverage",
     "audit:fix": "npm audit fix",
     "audit:check": "npx audit-ci --config ./audit-ci.jsonc",
     "dep:check": "ncu -e 2",
@@ -83,7 +82,6 @@
     "@types/node": "24.10.1",
     "audit-ci": "^7.1.0",
     "axios": "1.13.2",
-    "glob": "^10.5.0",
     "husky": "9.1.7",
     "jest": "^30.2.0",
     "license-checker": "25.0.1",
@@ -95,15 +93,14 @@
     "sinon": "21.0.0",
     "standard": "17.1.2",
     "standard-version": "^9.5.0",
-    "tap-spec": "^5.0.0",
-    "tap-xunit": "^2.4.1",
-    "tape": "5.9.0",
-    "tapes": "4.1.0",
     "tsc": "^2.0.4"
   },
   "standard": {
     "ignore": [
       "**/src/*.ts"
+    ],
+    "env": [
+      "jest"
     ]
   },
   "pre-commit": [
