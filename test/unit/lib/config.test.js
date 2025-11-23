@@ -1,10 +1,13 @@
 'use strict'
 
 const Sinon = require('sinon')
+const path = require('path')
+const fs = require('fs')
 
 describe('config', () => {
   const sandbox = Sinon.createSandbox()
   let originalEnv
+  const testLogFile = path.join(__dirname, 'test-output.log')
 
   beforeEach(() => {
     originalEnv = { ...process.env }
@@ -15,6 +18,10 @@ describe('config', () => {
   afterEach(() => {
     process.env = originalEnv
     sandbox.restore()
+    // Clean up test log file if it exists
+    if (fs.existsSync(testLogFile)) {
+      fs.unlinkSync(testLogFile)
+    }
   })
 
   it('process.env.LOG_LEVEL overrides the default.json value', () => {
@@ -78,12 +85,13 @@ describe('config', () => {
     jest.resetModules()
     jest.unmock('../../../src/lib/config')
     // Mock the config to have file transport with filename
+    // Use a test-specific path instead of /tmp to avoid security issues
     jest.doMock('../../../src/lib/config', () => ({
       level: 'info',
       customLevels: '',
       logTransport: 'file',
       transportFileOptions: {
-        filename: '/tmp/test',
+        filename: testLogFile,
         json: false,
         timestamp: true,
         prettyPrint: true,
