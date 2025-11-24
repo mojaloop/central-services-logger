@@ -1,6 +1,7 @@
-/* eslint-env jest */
+/* eslint-env mocha */
 process.env.CSL_LOG_LEVEL = 'info'
 
+// vi is available globally from vitest when globals: true
 const { loggerFactory, asyncStorage, ContextLogger } = require('../../src/contextLogger')
 const Logger = require('../../src/index.js')
 
@@ -12,7 +13,7 @@ describe('contextLogger Tests -->', () => {
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   test('should create ContextLogger instance', () => {
@@ -21,19 +22,19 @@ describe('contextLogger Tests -->', () => {
 
   test('should call Logger if Logger.level === called log method', () => {
     const { level } = log.mlLogger
-    const spy = jest.spyOn(log.mlLogger, level)
+    const spy = vi.spyOn(log.mlLogger, level)
     log[level]('info')
     expect(spy).toHaveBeenCalled()
   })
 
   test('should NOT call Logger.debug if Logger.level > debug', () => {
-    const spy = jest.spyOn(Logger, 'debug')
+    const spy = vi.spyOn(Logger, 'debug')
     log.debug('test')
     expect(spy).not.toHaveBeenCalled()
   })
 
   test('should log meta data', () => {
-    const spy = jest.spyOn(log.mlLogger, 'info')
+    const spy = vi.spyOn(log.mlLogger, 'info')
     const meta = { a: Date.now() }
     log.info('test', meta)
     expect(spy.mock.lastCall[1]).toMatchObject(meta)
@@ -50,7 +51,7 @@ describe('contextLogger Tests -->', () => {
   }
 
   test('should have access to async context inside and after a promise', async () => {
-    const spy = jest.spyOn(log.mlLogger, 'info')
+    const spy = vi.spyOn(log.mlLogger, 'info')
     const data = { x: String(Date.now()) }
     const promise = createPromiseWithAsyncStorage(data)
     log.info('test')
@@ -60,7 +61,7 @@ describe('contextLogger Tests -->', () => {
   })
 
   test('should have access to different async contexts independently', async () => {
-    const spy = jest.spyOn(log.mlLogger, 'info')
+    const spy = vi.spyOn(log.mlLogger, 'info')
 
     const data1 = { x1: '1' }
     const ms1 = 1000
@@ -87,7 +88,7 @@ describe('contextLogger Tests -->', () => {
   test('should not set unsupported logLevel, and output warning', () => {
     const newLevel = 'xxx'
     const { level } = log.mlLogger
-    const spy = jest.spyOn(log.mlLogger, 'warn')
+    const spy = vi.spyOn(log.mlLogger, 'warn')
 
     log.setLevel(newLevel)
     expect(log.mlLogger.level).toBe(level)
@@ -131,8 +132,8 @@ describe('contextLogger Tests -->', () => {
   test('should call underlying mlLogger methods based on logLevel', () => {
     const log1 = loggerFactory('L1')
     const log2 = loggerFactory('L2')
-    const spyDebug1 = jest.spyOn(log1.mlLogger, 'debug')
-    const spyWarn2 = jest.spyOn(log2.mlLogger, 'warn')
+    const spyDebug1 = vi.spyOn(log1.mlLogger, 'debug')
+    const spyWarn2 = vi.spyOn(log2.mlLogger, 'warn')
 
     log1.debug('debug')
     expect(spyDebug1).not.toHaveBeenCalled()
@@ -158,7 +159,7 @@ describe('contextLogger Tests -->', () => {
         message: 'test error'
       }
     }
-    const spy = jest.spyOn(log.mlLogger, 'error')
+    const spy = vi.spyOn(log.mlLogger, 'error')
     log.error('http error: ', err)
     expect(spy.mock.calls[0][1].httpErrorResponse).toEqual(err.response.data)
   })

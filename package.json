@@ -20,20 +20,19 @@
   },
   "homepage": "https://github.com/mojaloop/central-services-logger#readme",
   "scripts": {
-    "test": "npm run test:jest && npm run test:otel && npm run test:unit",
+    "test": "vitest run",
     "pretest": "standard",
     "standard": "standard",
     "standard:fix": "standard --fix",
     "lint": "npm run standard",
     "lint:fix": "npm run standard:fix",
     "test:functional": "true",
-    "test:jest": "jest",
+    "test:jest": "vitest run",
     "test:integration": "true",
-    "test:otel": "tapes 'test/unit/**/*.otel.js' | tap-spec",
-    "test:unit": "tapes 'test/unit/**/**.test.js' | tap-spec",
-    "test:xunit": "npm run test:jest && npm run test:otel && tapes 'test/unit/**/**.test.js' | tap-xunit > ./test/results/xunit.xml",
-    "test:coverage": "nyc --reporter=lcov --reporter=text-summary tapes -- 'test/unit/**/**.test.js'",
-    "test:coverage-check": "npm run test:coverage && nyc check-coverage",
+    "test:unit": "vitest run --include='test/unit/**/*.test.js'",
+    "test:xunit": "vitest run --reporter=default --reporter=junit",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage-check": "vitest run --coverage",
     "audit:fix": "npm audit fix",
     "audit:check": "npx audit-ci --config ./audit-ci.jsonc",
     "dep:check": "ncu -e 2",
@@ -66,7 +65,9 @@
     "micromatch": "4.0.8",
     "braces": "3.0.3",
     "trim": "0.0.3",
-    "brace-expansion": "2.0.2"
+    "brace-expansion": "2.0.2",
+    "glob": "10.5.0",
+    "js-yaml": "4.1.1"
   },
   "dependencies": {
     "@opentelemetry/api": "1.9.0",
@@ -77,30 +78,38 @@
     "winston": "3.18.3"
   },
   "devDependencies": {
-    "@opentelemetry/auto-instrumentations-node": "^0.66.0",
-    "@types/node": "24.10.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.67.0",
+    "@types/node": "24.10.1",
+    "@vitest/coverage-v8": "^4.0.13",
     "audit-ci": "^7.1.0",
     "axios": "1.13.2",
     "husky": "9.1.7",
-    "jest": "^30.2.0",
     "license-checker": "25.0.1",
     "npm-check-updates": "19.1.2",
-    "nyc": "17.1.0",
     "pre-commit": "^1.2.2",
     "proxyquire": "2.1.3",
     "replace": "^1.2.2",
     "sinon": "21.0.0",
     "standard": "17.1.2",
     "standard-version": "^9.5.0",
-    "tap-spec": "^5.0.0",
-    "tap-xunit": "^2.4.1",
-    "tape": "5.9.0",
-    "tapes": "4.1.0",
-    "tsc": "^2.0.4"
+    "tsc": "^2.0.4",
+    "vitest": "^4.0.13"
   },
   "standard": {
     "ignore": [
       "**/src/*.ts"
+    ],
+    "env": [
+      "mocha"
+    ],
+    "globals": [
+      "expect",
+      "vi",
+      "describe",
+      "it",
+      "beforeEach",
+      "afterEach",
+      "test"
     ]
   },
   "pre-commit": [
