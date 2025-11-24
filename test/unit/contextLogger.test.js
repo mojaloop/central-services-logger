@@ -77,4 +77,83 @@ describe('logger', () => {
       done()
     }, 10)
   })
+
+  it('logs audit level messages', (done) => {
+    logger.audit('audit message', { test: 'data' })
+
+    setTimeout(() => {
+      const output = capturedOutput.join('')
+      expect(output).toContain('audit')
+      expect(output).toContain('audit message')
+      done()
+    }, 10)
+  })
+
+  it('logs trace level messages', (done) => {
+    logger.trace('trace message', { test: 'data' })
+
+    setTimeout(() => {
+      const output = capturedOutput.join('')
+      expect(output).toContain('trace')
+      expect(output).toContain('trace message')
+      done()
+    }, 10)
+  })
+
+  it('logs perf level messages', (done) => {
+    logger.perf('perf message', { test: 'data' })
+
+    setTimeout(() => {
+      const output = capturedOutput.join('')
+      expect(output).toContain('perf')
+      expect(output).toContain('perf message')
+      done()
+    }, 10)
+  })
+
+  it('logs verbose level messages', (done) => {
+    logger.verbose('verbose message', { test: 'data' })
+
+    setTimeout(() => {
+      const output = capturedOutput.join('')
+      expect(output).toContain('verbose')
+      expect(output).toContain('verbose message')
+      done()
+    }, 10)
+  })
+
+  it('logs silly level messages', (done) => {
+    logger.silly('silly message', { test: 'data' })
+
+    setTimeout(() => {
+      const output = capturedOutput.join('')
+      expect(output).toContain('silly')
+      expect(output).toContain('silly message')
+      done()
+    }, 10)
+  })
+
+  it('handles setLevel method correctly', (done) => {
+    // Clear output before test
+    capturedOutput = []
+
+    // Set to a level that won't log silly
+    logger.setLevel('info')
+    logger.silly('should not appear')
+
+    // Set to silly to allow all levels
+    logger.setLevel('silly')
+    logger.silly('should appear')
+
+    // Try to set an invalid level
+    logger.setLevel('invalid')
+
+    setTimeout(() => {
+      const output = capturedOutput.join('')
+      expect(output).not.toContain('should not appear')
+      expect(output).toContain('should appear')
+      expect(output).toContain('Unsupported log level')
+      done()
+    }, 10)
+  })
 })
