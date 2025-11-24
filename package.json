@@ -20,19 +20,19 @@
   },
   "homepage": "https://github.com/mojaloop/central-services-logger#readme",
   "scripts": {
-    "test": "jest",
+    "test": "vitest run",
     "pretest": "standard",
     "standard": "standard",
     "standard:fix": "standard --fix",
     "lint": "npm run standard",
     "lint:fix": "npm run standard:fix",
     "test:functional": "true",
-    "test:jest": "jest",
+    "test:jest": "vitest run",
     "test:integration": "true",
-    "test:unit": "jest --testMatch='**/test/unit/**/*.test.js'",
-    "test:xunit": "JEST_JUNIT_OUTPUT_DIR=./test/results JEST_JUNIT_OUTPUT_NAME=xunit.xml jest --reporters=default --reporters=jest-junit",
-    "test:coverage": "jest --coverage",
-    "test:coverage-check": "jest --coverage",
+    "test:unit": "vitest run --include='test/unit/**/*.test.js'",
+    "test:xunit": "vitest run --reporter=default --reporter=junit",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage-check": "vitest run --coverage",
     "audit:fix": "npm audit fix",
     "audit:check": "npx audit-ci --config ./audit-ci.jsonc",
     "dep:check": "ncu -e 2",
@@ -80,11 +80,10 @@
   "devDependencies": {
     "@opentelemetry/auto-instrumentations-node": "^0.67.0",
     "@types/node": "24.10.1",
+    "@vitest/coverage-v8": "^4.0.13",
     "audit-ci": "^7.1.0",
     "axios": "1.13.2",
     "husky": "9.1.7",
-    "jest": "^30.2.0",
-    "jest-junit": "^16.0.0",
     "license-checker": "25.0.1",
     "npm-check-updates": "19.1.2",
     "pre-commit": "^1.2.2",
@@ -93,14 +92,24 @@
     "sinon": "21.0.0",
     "standard": "17.1.2",
     "standard-version": "^9.5.0",
-    "tsc": "^2.0.4"
+    "tsc": "^2.0.4",
+    "vitest": "^4.0.13"
   },
   "standard": {
     "ignore": [
       "**/src/*.ts"
     ],
     "env": [
-      "jest"
+      "mocha"
+    ],
+    "globals": [
+      "expect",
+      "vi",
+      "describe",
+      "it",
+      "beforeEach",
+      "afterEach",
+      "test"
     ]
   },
   "pre-commit": [
