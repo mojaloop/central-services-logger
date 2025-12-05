@@ -1,6 +1,9 @@
 /* eslint-env jest */
 'use strict'
 
+const path = require('path')
+const fs = require('fs')
+
 describe('config', () => {
   const originalEnv = process.env
 
@@ -54,13 +57,27 @@ describe('config', () => {
   })
 
   test('uses the file transport when LOG_TRANSPORT=file', () => {
+    // Use a test-specific directory within the project instead of publicly writable /tmp
+    const testLogDir = path.join(__dirname, '..', '..', '.test-output')
+    const testLogFile = path.join(testLogDir, 'test-logger.log')
+
+    // Ensure test output directory exists
+    if (!fs.existsSync(testLogDir)) {
+      fs.mkdirSync(testLogDir, { recursive: true })
+    }
+
     // Override the transport file options to include a valid filename
     process.env.CSL_LOG_TRANSPORT = 'file'
-    process.env.CSL_TRANSPORT_FILE_OPTIONS__filename = '/tmp/test-logger.log'
+    process.env.CSL_TRANSPORT_FILE_OPTIONS__filename = testLogFile
 
     const createMlLogger = require('../../../src/createMlLogger')
     const Logger = createMlLogger()
 
     expect(Logger.transports[0].name).toBe('file')
+
+    // Cleanup: remove test log file if created
+    if (fs.existsSync(testLogFile)) {
+      fs.unlinkSync(testLogFile)
+    }
   })
 })
