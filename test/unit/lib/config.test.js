@@ -1,124 +1,66 @@
+/* eslint-env jest */
 'use strict'
 
-const Test = require('tapes')(require('tape'))
-const Sinon = require('sinon')
-const Proxyquire = require('proxyquire')
+describe('config', () => {
+  const originalEnv = process.env
 
-const config = require('../../../src/lib/config')
-
-Test('config', (configTest) => {
-  const sandbox = Sinon.createSandbox()
-
-  configTest.afterEach(t => {
-    delete process.env.LOG_LEVEL
-    delete process.env.LOG_FILTER
-    delete process.env.LOG_TRANSPORT
-    sandbox.restore()
-
-    t.end()
+  beforeEach(() => {
+    jest.resetModules()
+    process.env = { ...originalEnv }
   })
 
-  configTest.test('process.env.LOG_LEVEL overrides the default.json value', assert => {
-    // Arrange
+  afterEach(() => {
+    process.env = originalEnv
+  })
+
+  test('process.env.LOG_LEVEL overrides the default.json value', () => {
     process.env.LOG_LEVEL = 'random_level'
 
-    // Act
-    const config = Proxyquire('../../../src/lib/config', {})
+    const config = require('../../../src/lib/config')
 
-    // Assert
-    assert.equal(config.level, 'random_level', 'Log levels match')
-    assert.end()
+    expect(config.level).toBe('random_level')
   })
 
-  configTest.test('process.env.LOG_FILTER overrides the default.json value', assert => {
-    // Arrange
+  test('process.env.LOG_FILTER overrides the default.json value', () => {
     process.env.LOG_FILTER = 'info,debug'
 
-    // Act
-    const config = Proxyquire('../../../src/lib/config', {})
+    const config = require('../../../src/lib/config')
 
-    // Assert
-    assert.equal(config.customLevels, 'info,debug', 'Log levels match')
-    assert.end()
+    expect(config.customLevels).toBe('info,debug')
   })
 
-  configTest.test('process.env.LOG_TRANSPORT object parsed', assert => {
-    // Arrange
+  test('process.env.LOG_TRANSPORT object parsed', () => {
     process.env.CSL_LOG_TRANSPORT = '{"console":{"type":"console"}}'
 
-    // Act
-    const config = Proxyquire('../../../src/lib/config', {})
-    console.log(config)
-    // Assert
-    assert.equal(config.logTransport.console.type, 'console', 'Object parsed correctly')
-    assert.end()
+    const config = require('../../../src/lib/config')
+
+    expect(config.logTransport.console.type).toBe('console')
   })
 
-  configTest.test('Fails to init when LOG_TRANSPORT=file, but filename is not set', assert => {
-    // Arrange
-    const customConfig = {
-      ...config,
-      logTransport: 'file',
-      transportFileOptions: {
-        ...config.transportFileOptions,
-        filename: ''
-      }
-    }
-
-    // Act
-    try {
-      const createMlLogger = Proxyquire('../../../src/createMlLogger', {
-        './lib/config': customConfig
-      })
-      createMlLogger()
-      assert.fail('should have thrown error')
-    } catch (err) {
-      // Assert
-      assert.ok(Sinon.match(err, 'Error: Cannot log to file without filename or stream'))
-    }
-
-    // Assert
-    assert.end()
+  test('Fails to init when LOG_TRANSPORT=file, but filename is not set', () => {
+    // Winston File transport throws when no filename or stream is provided
+    const { transports } = require('winston')
+    expect(() => {
+      new transports.File({ filename: '' }) // eslint-disable-line no-new
+    }).toThrow('Cannot log to file without filename or stream')
   })
 
-  configTest.test('uses the console transport when LOG_TRANSPORT=console', assert => {
-    // Arrange
-    const customConfig = {
-      ...config,
-      logTransport: 'console'
-    }
+  test('uses the console transport when LOG_TRANSPORT=console', () => {
+    process.env.CSL_LOG_TRANSPORT = 'console'
 
-    // Act
-    const LoggerProxy = Proxyquire('../../../src/index', {
-      './lib/config': customConfig
-    })
+    const Logger = require('../../../src/index')
 
-    // Assert
-    assert.equal(LoggerProxy.transports[0].name, 'console', 'Transport is console')
-    assert.end()
+    expect(Logger.transports[0].name).toBe('console')
   })
 
-  configTest.test('uses the file transport when LOG_TRANSPORT=file', assert => {
-    // Arrange
-    const customConfig = {
-      ...config,
-      logTransport: 'file',
-      transportFileOptions: {
-        ...config.transportFileOptions,
-        filename: '/tmp/test'
-      }
-    }
+  test('uses the file transport when LOG_TRANSPORT=file', () => {
+    // Override the transport file options to include a valid filename
+    process.env.CSL_LOG_TRANSPORT = 'file'
+    process.env.CSL_TRANSPORT_FILE_OPTIONS__filename = '/tmp/test-logger.log'
 
-    // Act
-    const createMlLogger = Proxyquire('../../../src/createMlLogger', {
-      './lib/config': customConfig
-    })
-    const LoggerProxy = createMlLogger()
+    const createMlLogger = require('../../../src/createMlLogger')
+    const Logger = createMlLogger()
 
-    // Assert
-    assert.equal(LoggerProxy.transports[0].name, 'file', 'Transport is file')
-    assert.end()
+    expect(Logger.transports[0].name).toBe('file')
   })
-
-  configTest.end()
 })

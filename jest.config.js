@@ -1,5 +1,6 @@
 module.exports = {
   verbose: true,
+  coverageProvider: 'v8',
   collectCoverageFrom: [
     '**/src/**/**/*.js'
   ],
@@ -11,6 +12,11 @@ module.exports = {
       lines: 90
     }
   },
-  testMatch: ['<rootDir>/test/jest/**/*.test.js']
-  // todo: rewrite all existing tests to use jest (instead of Tape)
+  testMatch: [
+    '<rootDir>/test/jest/**/*.test.js',
+    '<rootDir>/test/unit/**/*.test.js'
+  ],
+  testPathIgnorePatterns: [
+    '/node_modules/'
+  ]
 }
