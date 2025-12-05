@@ -162,4 +162,88 @@ describe('contextLogger Tests -->', () => {
     log.error('http error: ', err)
     expect(spy.mock.calls[0][1].httpErrorResponse).toEqual(err.response.data)
   })
+
+  describe('all log level methods', () => {
+    let sillyLog
+
+    beforeEach(() => {
+      sillyLog = loggerFactory('testContext')
+      sillyLog.setLevel('silly') // Enable all log levels
+    })
+
+    test('should call verbose method when level is enabled', () => {
+      const spy = jest.spyOn(sillyLog.mlLogger, 'verbose')
+      sillyLog.verbose('verbose message', { key: 'value' })
+      expect(spy).toHaveBeenCalled()
+      expect(spy.mock.calls[0][0]).toBe('verbose message')
+      expect(spy.mock.calls[0][1]).toMatchObject({ context: 'testContext', key: 'value' })
+    })
+
+    test('should call silly method when level is enabled', () => {
+      const spy = jest.spyOn(sillyLog.mlLogger, 'silly')
+      sillyLog.silly('silly message', { detail: 'info' })
+      expect(spy).toHaveBeenCalled()
+      expect(spy.mock.calls[0][0]).toBe('silly message')
+      expect(spy.mock.calls[0][1]).toMatchObject({ context: 'testContext', detail: 'info' })
+    })
+
+    test('should call audit method when level is enabled', () => {
+      const spy = jest.spyOn(sillyLog.mlLogger, 'audit')
+      sillyLog.audit('audit message', { action: 'login' })
+      expect(spy).toHaveBeenCalled()
+      expect(spy.mock.calls[0][0]).toBe('audit message')
+      expect(spy.mock.calls[0][1]).toMatchObject({ context: 'testContext', action: 'login' })
+    })
+
+    test('should call trace method when level is enabled', () => {
+      const spy = jest.spyOn(sillyLog.mlLogger, 'trace')
+      sillyLog.trace('trace message', { traceId: '123' })
+      expect(spy).toHaveBeenCalled()
+      expect(spy.mock.calls[0][0]).toBe('trace message')
+      expect(spy.mock.calls[0][1]).toMatchObject({ context: 'testContext', traceId: '123' })
+    })
+
+    test('should call perf method when level is enabled', () => {
+      const spy = jest.spyOn(sillyLog.mlLogger, 'perf')
+      sillyLog.perf('perf message', { duration: 100 })
+      expect(spy).toHaveBeenCalled()
+      expect(spy.mock.calls[0][0]).toBe('perf message')
+      expect(spy.mock.calls[0][1]).toMatchObject({ context: 'testContext', duration: 100 })
+    })
+
+    test('should not call verbose when level is higher', () => {
+      sillyLog.setLevel('info') // verbose is level 6, info is level 4
+      const spy = jest.spyOn(sillyLog.mlLogger, 'verbose')
+      sillyLog.verbose('should not appear')
+      expect(spy).not.toHaveBeenCalled()
+    })
+
+    test('should not call silly when level is higher', () => {
+      sillyLog.setLevel('debug') // silly is level 8, debug is level 7
+      const spy = jest.spyOn(sillyLog.mlLogger, 'silly')
+      sillyLog.silly('should not appear')
+      expect(spy).not.toHaveBeenCalled()
+    })
+
+    test('should not call audit when level is higher', () => {
+      sillyLog.setLevel('warn') // audit is level 2, warn is level 1
+      const spy = jest.spyOn(sillyLog.mlLogger, 'audit')
+      sillyLog.audit('should not appear')
+      expect(spy).not.toHaveBeenCalled()
+    })
+
+    test('should not call trace when level is higher', () => {
+      sillyLog.setLevel('audit') // trace is level 3, audit is level 2
+      const spy = jest.spyOn(sillyLog.mlLogger, 'trace')
+      sillyLog.trace('should not appear')
+      expect(spy).not.toHaveBeenCalled()
+    })
+
+    test('should not call perf when level is higher', () => {
+      sillyLog.setLevel('info') // perf is level 5, info is level 4
+      const spy = jest.spyOn(sillyLog.mlLogger, 'perf')
+      sillyLog.perf('should not appear')
+      expect(spy).not.toHaveBeenCalled()
+    })
+  })
 })
