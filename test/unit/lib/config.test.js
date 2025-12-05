@@ -1,8 +1,8 @@
 /* eslint-env jest */
 'use strict'
 
-const path = require('path')
-const fs = require('fs')
+const path = require('node:path')
+const fs = require('node:fs')
 
 describe('config', () => {
   const originalEnv = process.env
@@ -43,9 +43,8 @@ describe('config', () => {
   test('Fails to init when LOG_TRANSPORT=file, but filename is not set', () => {
     // Winston File transport throws when no filename or stream is provided
     const { transports } = require('winston')
-    expect(() => {
-      new transports.File({ filename: '' }) // eslint-disable-line no-new
-    }).toThrow('Cannot log to file without filename or stream')
+    const createFileTransport = () => new transports.File({ filename: '' })
+    expect(createFileTransport).toThrow('Cannot log to file without filename or stream')
   })
 
   test('uses the console transport when LOG_TRANSPORT=console', () => {
