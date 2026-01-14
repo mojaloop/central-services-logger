@@ -10,7 +10,6 @@ const SENSITIVE_KEY_EXCLUSIONS = Object.freeze([
 const SENSITIVE_SUBSTRINGS = Object.freeze([
   'token',
   'auth',
-  'api',
   'secret',
   'client',
   'password',
