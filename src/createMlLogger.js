@@ -47,10 +47,17 @@ const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !custo
 // Expected errors are indicated in the request header
 // baggage: errorExpect=<context>.<errorCode>|<context>.<errorCode>
 const errorExpect = format(info => {
-  if (['error', 'warn', 'fatal'].includes(info.level) && info.apiErrorCode?.code && info.context) {
+  const errorCode = info.apiErrorCode?.code
+    ?? info.error?.getData?.()?.res?.data?.statusCode
+    ?? info.error?.errorInformation?.errorCode
+    ?? info.error?.response?.data?.statusCode
+    ?? info.response?.body?.statusCode
+    ?? info.error?.code
+    ?? info.code
+  if (['error', 'warn', 'fatal'].includes(info.level) && errorCode && info.context) {
     const errorExpect = propagation.getActiveBaggage()?.getEntry('errorExpect')
     if (errorExpect) {
-      const expected = `${info.context}.${info.apiErrorCode.code}`
+      const expected = `${info.context}.${errorCode}`
       if (errorExpect.value.split('|').includes(expected)) {
         return {
           ...info,
@@ -63,6 +70,7 @@ const errorExpect = format(info => {
       }
     }
   }
+  // if (['error', 'warn', 'fatal'].includes(info.level)) debugger;
   return info
 })
 
@@ -95,7 +103,7 @@ const createMlLogger = () => {
   })
 
   // Modify Logger before export
-  ignoredLevels.forEach(level => { Logger[level] = () => {} })
+  ignoredLevels.forEach(level => { Logger[level] = () => { } })
 
   // Add "is<level>Enabled" flags
   // Those are used for optimimizing-out disabled logs sub-calls
