@@ -47,13 +47,13 @@ const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !custo
 // Expected errors are indicated in the request header
 // baggage: errorExpect=<context>.<errorCode>|<context>.<errorCode>
 const errorExpect = format(info => {
-  const errorCode = info.apiErrorCode?.code
-    ?? info.error?.getData?.()?.res?.data?.statusCode
-    ?? info.error?.errorInformation?.errorCode
-    ?? info.error?.response?.data?.statusCode
-    ?? info.response?.body?.statusCode
-    ?? info.error?.code
-    ?? info.code
+  const errorCode = info.apiErrorCode?.code ??
+    info.error?.getData?.()?.res?.data?.statusCode ??
+    info.error?.errorInformation?.errorCode ??
+    info.error?.response?.data?.statusCode ??
+    info.response?.body?.statusCode ??
+    info.error?.code ??
+    info.code
   if (['error', 'warn', 'fatal'].includes(info.level) && errorCode && info.context) {
     const errorExpect = propagation.getActiveBaggage()?.getEntry('errorExpect')
     if (errorExpect) {
