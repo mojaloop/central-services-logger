@@ -10,5 +10,8 @@
     "colorize": true,
     "filename": "logs/combined.log"
   },
+  "TRANSPORT_CONSOLE_OPTIONS": {
+    "useTwoLines": false
+  },
   "JSON_STRINGIFY_SPACING": 0
 }

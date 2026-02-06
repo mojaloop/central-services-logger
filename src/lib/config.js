@@ -7,6 +7,7 @@ const Config = {
   expectedErrorLevel: RC.EXPECTED_ERROR_LEVEL,
   logTransport: RC.LOG_TRANSPORT?.startsWith('{') ? JSON.parse(RC.LOG_TRANSPORT) : RC.LOG_TRANSPORT,
   transportFileOptions: RC.TRANSPORT_FILE_OPTIONS,
+  transportConsoleOptions: RC.TRANSPORT_CONSOLE_OPTIONS,
   jsonStringifySpacing: RC.JSON_STRINGIFY_SPACING
 }
 
