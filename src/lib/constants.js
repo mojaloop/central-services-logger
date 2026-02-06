@@ -11,7 +11,6 @@ const SENSITIVE_SUBSTRINGS = Object.freeze([
   'token',
   'auth',
   'secret',
-  'client',
   'password',
   'passphrase',
   'private',
@@ -23,7 +22,7 @@ const SENSITIVE_SUBSTRINGS = Object.freeze([
   'access',
   'refresh',
   'ssn',
-  'credit_card',
+  'credit_card', // think how to deal with camelCase 'creditCard'
   'card_number',
   'cvv',
   'iban_code',

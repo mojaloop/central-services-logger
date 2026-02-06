@@ -12,7 +12,8 @@
     "Lazola Lucas <lazola.lucas@modusbox.com>",
     "Georgi Georgiev <georgi.georgiev@modusbox.com>",
     "Valentin Genev <valentin.genev@modusbox.com>",
-    "Miguel de Barros <miguel.debarros@modusbox.com>"
+    "Miguel de Barros <miguel.debarros@modusbox.com>",
+    "Eugen Klymniuk <eugen.klymniuk@infitx.com>"
   ],
   "license": "Apache-2.0",
   "bugs": {
@@ -69,10 +70,13 @@
     "braces": "3.0.3",
     "trim": "0.0.3",
     "brace-expansion": "2.0.2",
-    "glob": "11.1.0"
+    "glob": "11.1.0",
+    "@isaacs/brace-expansion": "5.0.1",
+    "lodash": "4.17.23"
   },
   "dependencies": {
     "@opentelemetry/api": "1.9.0",
+    "@opentelemetry/semantic-conventions": "1.39.0",
     "parse-strings-in-object": "2.0.0",
     "rc": "1.2.8",
     "safe-stable-stringify": "^2.5.0",
@@ -80,15 +84,14 @@
     "winston": "3.19.0"
   },
   "devDependencies": {
-    "@opentelemetry/auto-instrumentations-node": "^0.67.3",
-    "@types/node": "25.0.8",
+    "@opentelemetry/auto-instrumentations-node": "^0.69.0",
+    "@types/node": "25.2.1",
     "audit-ci": "^7.1.0",
-    "axios": "1.13.2",
     "husky": "9.1.7",
     "jest": "^30.2.0",
     "jest-junit": "^16.0.0",
     "license-checker": "25.0.1",
-    "npm-check-updates": "19.3.1",
+    "npm-check-updates": "19.3.2",
     "pre-commit": "^1.2.2",
     "replace": "^1.2.2",
     "sinon": "21.0.1",
@@ -102,9 +105,10 @@
     ]
   },
   "pre-commit": [
-    "dep:check",
     "lint",
-    "test:unit"
+    "test:unit",
+    "dep:check",
+    "audit:check"
   ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
