@@ -7,7 +7,7 @@ const stringify = require('safe-stable-stringify')
 const config = require('./lib/config')
 const { SENSITIVE_SUBSTRINGS, SENSITIVE_VALUE_PATTERNS, SENSITIVE_KEY_EXCLUSIONS } = require('./lib/constants')
 
-const META_JSON_DELIMITER = config.transportConsoleOptions.useTwoLines ? '\n' : ''
+const META_JSON_DELIMITER = config.transportConsoleOptions?.useTwoLines ? '\n' : ''
 // to be able to output JSON in a new line
 
 const customFormat = printf(({ level, message, timestamp, ...rest }) => {
