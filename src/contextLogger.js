@@ -140,7 +140,7 @@ class ContextLogger {
 
 module.exports = {
   loggerFactory,
-  asyncStorage,
   ContextLogger,
+  asyncStorage,
   allLevels
 }
