@@ -98,5 +98,6 @@ export {
   loggerFactory,
   asyncStorage,
   ContextLogger, // think, if we need to export it
+  allLevels,
   ILogger,
 };

@@ -1,8 +1,14 @@
+const {
+  transports: { Console },
+  format: { combine, colorize, printf },
+  format
+} = require('winston')
 const stringify = require('safe-stable-stringify')
 const config = require('./lib/config')
 const { SENSITIVE_SUBSTRINGS, SENSITIVE_VALUE_PATTERNS, SENSITIVE_KEY_EXCLUSIONS } = require('./lib/constants')
 
-const { transports: { Console }, format: { combine, colorize, printf }, format } = require('winston')
+const META_JSON_DELIMITER = config.transportConsoleOptions?.useTwoLines ? '\n' : ''
+// to be able to output JSON in a new line
 
 const customFormat = printf(({ level, message, timestamp, ...rest }) => {
   function isSensitiveKey (key) {
@@ -33,7 +39,7 @@ const customFormat = printf(({ level, message, timestamp, ...rest }) => {
   const contextString = Object.values(rest).filter(value => value !== undefined).length
     ? ' -\t' + stringify(rest, replacer, config.jsonStringifySpacing)
     : ''
-  return `${timestamp} - ${level}: ${message}${contextString}`
+  return `${timestamp} - ${level}: ${message}${META_JSON_DELIMITER}${contextString}`
 })
 
 const ignoreExpectedError = format(info => (info.expected && ['error', 'warn', 'fatal'].includes(info.level) && config.expectedErrorLevel === false) ? false : info)
