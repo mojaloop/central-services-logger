@@ -163,6 +163,46 @@ describe('contextLogger Tests -->', () => {
     expect(spy.mock.calls[0][1].httpErrorResponse).toEqual(err.response.data)
   })
 
+  describe('setLevel isolation (lazy detach)', () => {
+    let parent, child
+
+    beforeEach(() => {
+      parent = loggerFactory('parent')
+      child = parent.child({ component: 'child' })
+    })
+
+    test('child.setLevel should NOT change parent level', () => {
+      expect(parent.mlLogger.level).toBe('info')
+      child.setLevel('debug')
+      expect(child.mlLogger.level).toBe('debug')
+      expect(parent.mlLogger.level).toBe('info')
+    })
+
+    test('child.setLevel should NOT change sibling level', () => {
+      const child2 = parent.child({ component: 'child2' })
+      child.setLevel('debug')
+      expect(child.mlLogger.level).toBe('debug')
+      expect(child2.mlLogger.level).toBe('info')
+      expect(parent.mlLogger.level).toBe('info')
+    })
+
+    test('after child.setLevel, isEnabled flags should be correct', () => {
+      expect(parent.isDebugEnabled).toBe(false)
+      expect(child.isDebugEnabled).toBe(false)
+      child.setLevel('debug')
+      expect(child.isDebugEnabled).toBe(true)
+      expect(parent.isDebugEnabled).toBe(false)
+    })
+
+    test('child of child should inherit the detached level', () => {
+      child.setLevel('debug')
+      const grandchild = child.child({ component: 'grandchild' })
+      expect(grandchild.mlLogger.level).toBe('debug')
+      expect(grandchild.isDebugEnabled).toBe(true)
+      expect(parent.isDebugEnabled).toBe(false)
+    })
+  })
+
   describe('all log level methods', () => {
     let sillyLog
 
