@@ -90,9 +90,15 @@ class ContextLogger {
       this.warn('Unsupported log level:', { level })
       return
     }
-    this.mlLogger = this.mlLogger.child({})
+    if (this.mlLogger.level === level) return
+
+    const prevLogger = this.mlLogger
+    this.mlLogger = createMlLogger()
     this.mlLogger.level = level
     this.setIsEnabledFlags()
+
+    prevLogger.exceptions?.unhandle()
+    prevLogger.rejections?.unhandle()
   }
 
   formatLog(message, meta) {
