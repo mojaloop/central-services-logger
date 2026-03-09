@@ -131,23 +131,28 @@ describe('contextLogger Tests -->', () => {
   test('should call underlying mlLogger methods based on logLevel', () => {
     const log1 = loggerFactory('L1')
     const log2 = loggerFactory('L2')
-    const spyDebug1 = jest.spyOn(log1.mlLogger, 'debug')
-    const spyWarn2 = jest.spyOn(log2.mlLogger, 'warn')
 
+    // Before setLevel — debug blocked at info level
+    const spyDebug1Before = jest.spyOn(log1.mlLogger, 'debug')
     log1.debug('debug')
-    expect(spyDebug1).not.toHaveBeenCalled()
+    expect(spyDebug1Before).not.toHaveBeenCalled()
 
+    const spyWarn2Before = jest.spyOn(log2.mlLogger, 'warn')
     log2.warn('warn')
-    expect(spyWarn2).toHaveBeenCalled()
+    expect(spyWarn2Before).toHaveBeenCalled()
 
+    // After setLevel — spies on NEW mlLogger
     log1.setLevel('debug')
     log2.setLevel('warn')
 
+    const spyDebug1After = jest.spyOn(log1.mlLogger, 'debug')
+    const spyWarn2After = jest.spyOn(log2.mlLogger, 'warn')
+
     log1.debug('debug2')
-    expect(spyDebug1).toHaveBeenCalled()
+    expect(spyDebug1After).toHaveBeenCalled()
 
     log2.warn('warn')
-    expect(spyWarn2).toHaveBeenCalledTimes(2)
+    expect(spyWarn2After).toHaveBeenCalled()
   })
 
   test('should log Axios error response data', () => {
@@ -161,6 +166,86 @@ describe('contextLogger Tests -->', () => {
     const spy = jest.spyOn(log.mlLogger, 'error')
     log.error('http error: ', err)
     expect(spy.mock.calls[0][1].httpErrorResponse).toEqual(err.response.data)
+  })
+
+  describe('setLevel isolation (lazy detach)', () => {
+    let parent, child
+
+    beforeEach(() => {
+      parent = loggerFactory('parent')
+      child = parent.child({ component: 'child' })
+    })
+
+    test('child.setLevel should NOT change parent level', () => {
+      expect(parent.mlLogger.level).toBe('info')
+      child.setLevel('debug')
+      expect(child.mlLogger.level).toBe('debug')
+      expect(parent.mlLogger.level).toBe('info')
+    })
+
+    test('child.setLevel should NOT change sibling level', () => {
+      const child2 = parent.child({ component: 'child2' })
+      child.setLevel('debug')
+      expect(child.mlLogger.level).toBe('debug')
+      expect(child2.mlLogger.level).toBe('info')
+      expect(parent.mlLogger.level).toBe('info')
+    })
+
+    test('after child.setLevel, isEnabled flags should be correct', () => {
+      expect(parent.isDebugEnabled).toBe(false)
+      expect(child.isDebugEnabled).toBe(false)
+      child.setLevel('debug')
+      expect(child.isDebugEnabled).toBe(true)
+      expect(parent.isDebugEnabled).toBe(false)
+    })
+
+    test('child of child should inherit the detached level', () => {
+      child.setLevel('debug')
+      const grandchild = child.child({ component: 'grandchild' })
+      expect(grandchild.mlLogger.level).toBe('debug')
+      expect(grandchild.isDebugEnabled).toBe(true)
+      expect(parent.isDebugEnabled).toBe(false)
+    })
+
+    test('child.setLevel should deliver debug messages to transport', () => {
+      child.setLevel('debug')
+      const transport = child.mlLogger.transports[0]
+      const spy = jest.spyOn(transport, 'log')
+      child.debug('test debug message')
+      expect(spy).toHaveBeenCalled()
+    })
+
+    test('parent should NOT deliver debug messages to transport after child.setLevel', () => {
+      child.setLevel('debug')
+      const transport = parent.mlLogger.transports[0]
+      const spy = jest.spyOn(transport, 'log')
+      parent.debug('should not appear')
+      expect(spy).not.toHaveBeenCalled()
+    })
+
+    test('parent.setLevel should not break existing children', () => {
+      const childTransport = child.mlLogger.transports[0]
+      const spy = jest.spyOn(childTransport, 'log')
+      parent.setLevel('debug')
+      child.info('should still work')
+      expect(spy).toHaveBeenCalled()
+    })
+
+    test('repeated setLevel should not leak process listeners', () => {
+      const before = process.listenerCount('uncaughtException')
+      for (let i = 0; i < 10; i++) {
+        child.setLevel('debug')
+      }
+      const after = process.listenerCount('uncaughtException')
+      expect(after).toBeLessThanOrEqual(before + 1)
+    })
+
+    test('setLevel with same level should be a no-op', () => {
+      child.setLevel('debug')
+      const mlLoggerAfterFirst = child.mlLogger
+      child.setLevel('debug')
+      expect(child.mlLogger).toBe(mlLoggerAfterFirst)
+    })
   })
 
   describe('all log level methods', () => {

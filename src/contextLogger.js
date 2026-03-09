@@ -30,6 +30,7 @@
 const { AsyncLocalStorage } = require('node:async_hooks')
 const createMlLogger = require('./createMlLogger')
 const { allLevels } = require('./lib/constants')
+const { exceptionDto } = require('./otelDto')
 
 const asyncStorage = new AsyncLocalStorage()
 
@@ -89,8 +90,15 @@ class ContextLogger {
       this.warn('Unsupported log level:', { level })
       return
     }
+    if (this.mlLogger.level === level) return
+
+    const prevLogger = this.mlLogger
+    this.mlLogger = createMlLogger()
     this.mlLogger.level = level
     this.setIsEnabledFlags()
+
+    prevLogger.exceptions?.unhandle()
+    prevLogger.rejections?.unhandle()
   }
 
   formatLog(message, meta) {
@@ -124,12 +132,11 @@ class ContextLogger {
   }
 
   static formatError(error) {
-    const { message, stack, code, cause, expected, apiErrorCode, response } = error
+    const { message, cause, expected, apiErrorCode, response } = error
 
     return {
       message,
-      ...(stack && { stack }),
-      ...(code && { code }),
+      ...exceptionDto(error),
       ...(expected && { expected }),
       ...(apiErrorCode && { apiErrorCode }),
       ...(response && { httpErrorResponse: response.data }), // for Axios errors
@@ -140,6 +147,7 @@ class ContextLogger {
 
 module.exports = {
   loggerFactory,
+  ContextLogger,
   asyncStorage,
-  ContextLogger
+  allLevels
 }
