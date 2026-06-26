@@ -44,7 +44,7 @@
     "license-checker": {
       "glob": "10.5.0"
     },
-    "js-yaml": "4.1.1",
+    "js-yaml": "4.2.0",
     "shins": {
       "ajv": "6.12.3",
       "ejs": "3.1.10",
@@ -68,13 +68,16 @@
     "micromatch": "4.0.8",
     "braces": "3.0.3",
     "trim": "0.0.3",
-    "brace-expansion": "2.0.2",
+    "brace-expansion": "2.1.1",
     "glob": "11.1.0",
     "@isaacs/brace-expansion": "5.0.1",
-    "lodash": "4.17.23"
+    "lodash": "4.18.1",
+    "replace": {
+      "minimatch": "3.1.5"
+    }
   },
   "dependencies": {
-    "@opentelemetry/api": "1.9.0",
+    "@opentelemetry/api": "1.9.1",
     "parse-strings-in-object": "2.0.0",
     "rc": "1.2.8",
     "safe-stable-stringify": "^2.5.0",
@@ -82,18 +85,18 @@
     "winston": "3.19.0"
   },
   "devDependencies": {
-    "@opentelemetry/auto-instrumentations-node": "^0.69.0",
-    "@types/node": "25.2.3",
+    "@opentelemetry/auto-instrumentations-node": "^0.77.0",
+    "@types/node": "24.13.2",
     "audit-ci": "^7.1.0",
-    "axios": "1.13.5",
+    "axios": "1.18.1",
     "husky": "9.1.7",
-    "jest": "^30.2.0",
-    "jest-junit": "^16.0.0",
+    "jest": "^30.4.2",
+    "jest-junit": "^17.0.0",
     "license-checker": "25.0.1",
-    "npm-check-updates": "19.3.2",
-    "pre-commit": "^1.2.2",
+    "npm-check-updates": "22.2.7",
+    "pre-commit": "^2.0.0",
     "replace": "^1.2.2",
-    "sinon": "21.0.1",
+    "sinon": "22.0.0",
     "standard": "17.1.2",
     "standard-version": "^9.5.0",
     "tsc": "^2.0.4"
