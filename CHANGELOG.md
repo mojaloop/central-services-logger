@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.10.6](https://github.com/mojaloop/central-services-logger/compare/v11.10.5...v11.10.6) (2026-07-08)
+
 ### [11.10.5](https://github.com/mojaloop/central-services-logger/compare/v11.10.4...v11.10.5) (2026-06-26)
 
 ### [11.10.4](https://github.com/mojaloop/central-services-logger/compare/v11.10.3...v11.10.4) (2026-02-13)
