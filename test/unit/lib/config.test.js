@@ -41,10 +41,11 @@ describe('config', () => {
   })
 
   test('Fails to init when LOG_TRANSPORT=file, but filename is not set', () => {
-    // Winston File transport throws when no filename or stream is provided
-    const { transports } = require('winston')
-    const createFileTransport = () => new transports.File({ filename: '' })
-    expect(createFileTransport).toThrow('Cannot log to file without filename or stream')
+    process.env.CSL_LOG_TRANSPORT = 'file'
+    process.env.CSL_TRANSPORT_FILE_OPTIONS__filename = ''
+
+    const createMlLogger = require('../../../src/createMlLogger')
+    expect(() => createMlLogger()).toThrow('CSL: LOG_TRANSPORT=file requires TRANSPORT_FILE_OPTIONS.filename')
   })
 
   test('uses the console transport when LOG_TRANSPORT=console', () => {

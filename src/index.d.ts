@@ -10,15 +10,6 @@
 
  Contributors
  --------------
- This is the official list of the Mojaloop project contributors for this file.
- Names of the original copyright holders (individuals or organizations)
- should be listed with a '*' in the first column. People who have
- contributed from an organization can be listed under the organization
- that actually holds the copyright for their contributions (see the
- Mojaloop Foundation for an example). Those individuals should have
- their names indented and be marked with a '-'. Email address can be added
- optionally within square brackets <email>.
-
  * Mojaloop Foundation
  - Name Surname <name.surname@mojaloop.io>
 
@@ -26,7 +17,59 @@
  - Vijaya Kumar Guthi <vijaya.guthi@modusbox.com>
  --------------
  ******/
-import { Logger as WinstonLogger } from 'winston'
+import { allLevels } from './lib/constants'
 
-declare const Logger: WinstonLogger
-export = Logger
+type LevelName = keyof typeof allLevels;
+
+/** Accepts (message), (message, meta), a bare Error, a single object, or printf-style tokens with args. */
+type MlLogMethod = (message?: unknown, meta?: unknown, ...args: unknown[]) => MlLogger;
+
+interface TransportDescriptor {
+  name: string;
+  level?: LevelName | string;
+  silent: boolean;
+  log(line: string, rec: unknown): void;
+  flushSync?(): void;
+}
+
+/** The default export: a pino-backed logger with the historical csl (winston-era) surface. */
+interface MlLogger {
+  error: MlLogMethod;
+  warn: MlLogMethod;
+  audit: MlLogMethod;
+  trace: MlLogMethod;
+  info: MlLogMethod;
+  perf: MlLogMethod;
+  verbose: MlLogMethod;
+  debug: MlLogMethod;
+  silly: MlLogMethod;
+
+  isErrorEnabled: boolean;
+  isWarnEnabled: boolean;
+  isAuditEnabled: boolean;
+  isTraceEnabled: boolean;
+  isInfoEnabled: boolean;
+  isPerfEnabled: boolean;
+  isVerboseEnabled: boolean;
+  isDebugEnabled: boolean;
+  isSillyEnabled: boolean;
+
+  log(level: LevelName | string, message?: unknown, meta?: unknown, ...args: unknown[]): MlLogger;
+  child(bindings?: Record<string, unknown> | null): MlLogger;
+  /** @deprecated alias of child(), kept for winston-era compatibility */
+  push(bindings?: Record<string, unknown> | null): MlLogger;
+  isLevelEnabled(level: LevelName | string): boolean;
+
+  level: LevelName | string;
+  silent: boolean;
+  /** @deprecated compatibility shim — descriptors, not winston transport instances */
+  readonly transports: TransportDescriptor[];
+  readonly levels: typeof allLevels;
+  readonly id: number;
+
+  resync(): MlLogger;
+  flush(): void;
+}
+
+declare const Logger: MlLogger;
+export = Logger;

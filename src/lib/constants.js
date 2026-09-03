@@ -2,6 +2,19 @@ const allLevels = Object.freeze({
   error: 0, warn: 1, audit: 2, trace: 3, info: 4, perf: 5, verbose: 6, debug: 7, silly: 8
 })
 
+// Pino numeric values for the same levels (higher = more severe), chosen on pino's
+// conventional 10..60 scale so @opentelemetry/instrumentation-pino maps severities sanely.
+const LEVEL_VALUES = Object.freeze({
+  silly: 10, debug: 20, verbose: 25, perf: 28, info: 30, trace: 32, audit: 35, warn: 40, error: 50
+})
+
+// pino numeric value -> level name
+const LEVEL_LABELS = Object.freeze(Object.fromEntries(
+  Object.entries(LEVEL_VALUES).map(([name, value]) => [value, name])
+))
+
+const LEVEL_NAMES = Object.freeze(Object.keys(allLevels))
+
 const SENSITIVE_KEY_EXCLUSIONS = Object.freeze([
   'context',
   'stack'
@@ -47,6 +60,9 @@ const SENSITIVE_VALUE_PATTERNS = Object.freeze([
 
 module.exports = {
   allLevels,
+  LEVEL_VALUES,
+  LEVEL_LABELS,
+  LEVEL_NAMES,
   SENSITIVE_SUBSTRINGS,
   SENSITIVE_VALUE_PATTERNS,
   SENSITIVE_KEY_EXCLUSIONS

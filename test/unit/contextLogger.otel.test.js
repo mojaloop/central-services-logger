@@ -55,4 +55,16 @@ describe('logger with OpenTelemetry', () => {
     })
     expect(process.stdout.write.firstCall.args[0]).toContain('info')
   })
+
+  test('an unknown expectedErrorLevel drops the expected error (v11 transport-level parity)', () => {
+    config.expectedErrorLevel = 'not-a-level'
+    context.with(propagation.setBaggage(
+      context.active(),
+      propagation.createBaggage({ errorExpect: { value: 'test.1001' } })
+    ), () => {
+      logger.error('test error', error)
+    })
+    config.expectedErrorLevel = 'info'
+    expect(process.stdout.write.notCalled).toBe(true)
+  })
 })

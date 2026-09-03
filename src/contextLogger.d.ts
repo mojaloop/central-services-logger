@@ -59,7 +59,7 @@ type Prettify<T> = {
 } & unknown;
 
 type ContextLoggerOptions = {
-  mlLogger?: ILogger; // underlying ML Logger (winston)
+  mlLogger?: ILogger; // underlying ML Logger (pino-backed MlLogger)
   jsonOutput?: boolean;
 }
 
@@ -99,4 +99,8 @@ export {
   asyncStorage,
   ContextLogger, // think, if we need to export it
   ILogger,
+  Json,
+  LogContext,
+  LogMeta,
+  LogMethod,
 };

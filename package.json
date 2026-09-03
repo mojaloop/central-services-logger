@@ -28,7 +28,7 @@
     "lint:fix": "npm run standard:fix",
     "test:functional": "true",
     "test:integration": "true",
-    "test:unit": "jest --testPathPattern=test/unit",
+    "test:unit": "jest --testPathPatterns=test/unit",
     "test:xunit": "jest --reporters=default --reporters=jest-junit",
     "test:coverage": "jest --coverage",
     "test:coverage-check": "jest --coverage",
@@ -38,7 +38,9 @@
     "dep:update": "ncu -u",
     "release": "standard-version --no-verify --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'",
     "snapshot": "standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'chore(snapshot): {{currentTag}}'",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "test:golden": "bash test/golden/run.sh",
+    "bench": "node test/perf/bench.js > /dev/null"
   },
   "overrides": {
     "license-checker": {
@@ -79,16 +81,17 @@
   "dependencies": {
     "@opentelemetry/api": "1.9.1",
     "parse-strings-in-object": "2.0.0",
+    "pino": "10.3.1",
+    "quick-format-unescaped": "4.0.4",
     "rc": "1.2.8",
-    "safe-stable-stringify": "^2.5.0",
-    "triple-beam": "1.4.1",
-    "winston": "3.19.0"
+    "safe-stable-stringify": "^2.5.0"
   },
   "devDependencies": {
     "@opentelemetry/auto-instrumentations-node": "^0.78.0",
     "@types/node": "24.13.2",
     "audit-ci": "^7.1.0",
     "axios": "1.18.1",
+    "csl11": "npm:@mojaloop/central-services-logger@11.10.6",
     "husky": "9.1.7",
     "jest": "^30.4.2",
     "jest-junit": "^17.0.0",
@@ -118,5 +121,8 @@
     "scripts": {
       "postchangelog": "replace '\\[mojaloop/#(\\d+)\\]\\(https://github.com/mojaloop/(.*)/issues/(\\d+)\\)' '[mojaloop/#$1](https://github.com/mojaloop/project/issues/$1)' CHANGELOG.md"
     }
+  },
+  "engines": {
+    "node": ">=20.x"
   }
 }

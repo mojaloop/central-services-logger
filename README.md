@@ -3,7 +3,7 @@
 [![Git Releases](https://img.shields.io/github/release/mojaloop/central-services-logger.svg?style=flat)](https://github.com/mojaloop/central-services-logger/releases)
 [![CircleCI](https://circleci.com/gh/mojaloop/central-services-logger.svg?style=svg)](https://circleci.com/gh/mojaloop/central-services-logger)
 
-Common shared Logging lib for Mojaloop components
+Common shared Logging lib for Mojaloop components, backed by [pino](https://github.com/pinojs/pino). The default output format is byte-identical to the historical (winston-era, ≤ v11) line format; set `CSL_LOG_FORMAT=json` for structured newline-JSON output.
 
 ## Configuration
 
@@ -18,9 +18,12 @@ Edit the file in `./config/default.json` to configure the logger, or set the fol
 | `LOG_FILTER` | Also `CSL_LOG_FILTER` | `""` | e.g. `"error, trace, verbose" |
 | `CSL_LOG_FILTER` | Applies a log filter. Specify a comma separated list of individual log levels to be included instead of specifying a `LOG_LEVEL` | `""` | e.g. `"error, trace, verbose" |
 | `CSL_LOG_TRANSPORT` | Selects the transport method. Either `console`, `file` or a map for multiple transports. Uses the same transport for errors and standard logs | `console` | `console`, `file`, `{}` |
-| `CSL_TRANSPORT_FILE_OPTIONS` | _Optional._ Required if `LOG_TRANSPORT=file`. Configures the winston file transport | See `default.json` | See the [Winston Docs](https://github.com/winstonjs/winston#common-transport-options) |
-| `CSL_JSON_STRINGIFY_SPACING` |  _Optional._  A number that's used to insert white space into the output JSON string for readability purposes. | 2 | integer
-| `EXPECTED_ERROR_LEVEL` | Set log level for expected errors or turn off console logging when `false` | `info` | Log levels, `false` |
+| `CSL_TRANSPORT_FILE_OPTIONS` | _Optional._ Required if `LOG_TRANSPORT=file`. `filename` is mandatory; an optional `level` restricts the transport; legacy winston-era keys are ignored | See `default.json` | `{ "filename": "logs/combined.log" }` |
+| `CSL_LOG_FORMAT` | Output format: `legacy` reproduces the pre-v12 line format byte-for-byte; `json` emits one-line pino JSON (`level` label, ISO `time`, `message` key) | `legacy` | `legacy`, `json` |
+| `CSL_LOG_SYNC` | `false` switches console/file writes to buffered asynchronous mode (sonic-boom, 4KB buffer, periodic + on-exit flush; `Logger.flush()` drains on demand). Trade-off: a direct signal kill without a shutdown handler can lose the buffered tail | `true` | `true`, `false` |
+| `CSL_JSON_STRINGIFY_SPACING` |  _Optional._  A number that's used to insert white space into the output JSON string for readability purposes. | 0 | integer
+| `EXPECTED_ERROR_LEVEL` | Set log level for expected errors or turn off logging them when `false` | `info` | Log levels, `false` |
+| `CSL_HANDLE_EXCEPTIONS` | Log uncaught exceptions through the logger and keep the process running (pre-v12 parity). Set to `false` to restore Node's default crash behaviour | `true` | `true`, `false` |
 
 ### Configuring multiple transports
 
@@ -83,15 +86,31 @@ Logger.warn('warning')
 Logger.error('an error has occurred')
 ```
 
-The Logger class is backed by [Winston](https://github.com/winstonjs/winston), which allows you to do things like [string interpolation](https://github.com/winstonjs/winston#string-interpolation):
+The Logger is backed by [pino](https://github.com/pinojs/pino) behind a compatibility wrapper that keeps the historical csl surface: printf-style interpolation, `(message, meta)` structured calls, bare `Error` arguments, `Logger.log(level, ...)`, `Logger.child(bindings)` and the `is<Level>Enabled` guard flags all work:
 
 ```javascript
-Logger.info('test message %s', 'my string');
+Logger.info('test message %s', 'my string')
+Logger.info('transfer prepared', { transferId, payerFsp })
+Logger.error('request failed', err) // enumerable props + stack land in the context blob
+Logger.isDebugEnabled && Logger.debug(`payload: ${JSON.stringify(payload)}`)
 ```
 
-You can also call the Logger.log method which directly calls the Winston log method and gives even more flexibility.
+By default, the Logger logs to the console only, with timestamps and colorized output. Sensitive keys and values (tokens, secrets, PEM/JWT material, ...) are redacted before a record reaches any transport or OpenTelemetry log exporter.
 
-By default, the Logger class is setup to log to the console only, with timestamps and colorized output.
+### v12 behaviour changes (winston → pino)
+
+The default (legacy) output is byte-identical to v11 — enforced by `npm run test:golden`, which diffs this implementation against the published v11 on a fixture corpus. Deliberate changes, all fixes of v11 defects:
+
+* `Logger.error(err)` (bare Error) logs `err.message` plus stack/enumerables — v11 printed `undefined` and dropped the stack.
+* `Logger.info(obj)` without a `message` key logs the object as context — v11 printed `[object Object]`.
+* printf tokens (`%s %d %j %o`) now interpolate and a trailing object becomes meta — v11 silently dropped the extra arguments. Audit call sites that pass payloads via `%s`: prefer `(msg, { payload })` so key-based redaction applies.
+* `LOG_TRANSPORT=file` writes real formatted lines — v11 wrote literal `undefined` lines.
+* Uncaught exceptions are logged once through one process-wide handler — v11 logged them twice (second line literally `undefined`) and leaked one listener per `loggerFactory()` call.
+* `is<Level>Enabled` / `isLevelEnabled()` now honour `LOG_FILTER` and runtime level changes; `Logger.log()` honours `LOG_FILTER` too.
+* `meta.timestamp` no longer replaces the line timestamp (it is dropped); an invalid `LOG_LEVEL` falls back to `info` with a warning.
+* Redaction and expected-error suppression apply to **all** transports — in v11 both were console-only, so UDP/file records were unredacted.
+* `Logger.transports` is a deprecated compatibility shim (descriptors with `name`/`level`/`silent`), not winston transport instances; use `Logger.level = '<level>'` and `Logger.silent = true` instead.
+* The TypeScript type of the default export is a csl-owned interface (winston types are gone).
 
 ## Auditing Dependencies
 

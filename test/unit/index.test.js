@@ -8,7 +8,7 @@ const stringify = require('safe-stable-stringify')
 const { SENSITIVE_KEY_EXCLUSIONS } = require('../../src/lib/constants')
 
 describe('logger', () => {
-  test('configure Winston with Console transport', () => {
+  test('configures the logger with a Console transport', () => {
     expect(Logger.transports).toBeDefined()
     expect(Logger.transports.length).toBeGreaterThan(0)
   })

@@ -32,87 +32,26 @@
 
 'use strict'
 
-const { propagation } = require('@opentelemetry/api')
-const { createLogger, format, transports: winstonTransports } = require('winston')
-const { LEVEL } = require('triple-beam')
 const config = require('./lib/config')
-const { customLevels, level, logTransport, transportFileOptions } = config
-const { allLevels } = require('./lib/constants')
-const UdpTransport = require('./UdpTransport')
-const ConsoleTransport = require('./ConsoleTransport')
+const { MlLogger } = require('./MlLogger')
+const { createTransports } = require('./lib/transports')
+const exceptionHandler = require('./lib/exceptionHandler')
 
-const customLevelsArr = customLevels.split(',').map(l => l.trim()).filter(Boolean)
-const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !customLevelsArr.includes(key)) : []
-
-// Expected errors are indicated in the request header
-// baggage: errorExpect=<context>.<errorCode>|<context>.<errorCode>
-const errorExpect = format(info => {
-  if (['error', 'warn', 'fatal'].includes(info.level) && info.apiErrorCode?.code && info.context) {
-    const errorExpect = propagation.getActiveBaggage()?.getEntry('errorExpect')
-    if (errorExpect) {
-      const expected = `${info.context}.${info.apiErrorCode.code}`
-      if (errorExpect.value.split('|').includes(expected)) {
-        return {
-          ...info,
-          expected,
-          ...typeof config.expectedErrorLevel === 'string' && {
-            [LEVEL]: config.expectedErrorLevel,
-            level: config.expectedErrorLevel
-          }
-        }
-      }
-    }
-  }
-  return info
-})
-
-const transportsMap = {
-  console: ConsoleTransport,
-  file: winstonTransports.File,
-  http: winstonTransports.Http,
-  stream: winstonTransports.Stream,
-  udp: UdpTransport
+const parseFilter = (customLevels) => {
+  const names = (customLevels || '').split(',').map(l => l.trim()).filter(Boolean)
+  return names.length ? new Set(names) : null
 }
 
 const createMlLogger = () => {
-  let transports
-  if (logTransport === 'file') {
-    transports = [new winstonTransports.File(transportFileOptions)]
-  } else if (typeof logTransport === 'object') {
-    transports = Object.entries(logTransport).map(([name, { transport = name, ...config }]) => new transportsMap[transport](config))
-  } else transports = [new ConsoleTransport()]
-
-  const Logger = createLogger({
-    level,
-    levels: allLevels,
-    format: format.combine(
-      format.timestamp(),
-      errorExpect()
-    ),
-    transports,
-    exceptionHandlers: transports,
-    exitOnError: false
+  const Logger = new MlLogger({
+    level: config.level,
+    // LOG_FILTER is a whitelist of level names; v12 also reflects it in is*Enabled/isLevelEnabled
+    filter: parseFilter(config.customLevels),
+    mode: config.logFormat,
+    transports: createTransports(config)
   })
 
-  // Modify Logger before export
-  ignoredLevels.forEach(level => { Logger[level] = () => {} })
-
-  // Add "is<level>Enabled" flags
-  // Those are used for optimimizing-out disabled logs sub-calls
-  //
-  // In this example, JSON.stringify() would get called even if "info" level is off.
-  //   Logger.info(`Notification:consumeMessage message: - ${JSON.stringify(message)}`)
-  // so to optimize-out:
-  //   Logger.isInfoEnabled && Logger.info(`Notification:consumeMessage message: - ${JSON.stringify(message)}`)
-  Logger.isErrorEnabled = Logger.isLevelEnabled('error')
-  Logger.isWarnEnabled = Logger.isLevelEnabled('warn')
-  Logger.isAuditEnabled = Logger.isLevelEnabled('audit')
-  Logger.isTraceEnabled = Logger.isLevelEnabled('trace')
-  Logger.isInfoEnabled = Logger.isLevelEnabled('info')
-  Logger.isPerfEnabled = Logger.isLevelEnabled('perf')
-  Logger.isVerboseEnabled = Logger.isLevelEnabled('verbose')
-  Logger.isDebugEnabled = Logger.isLevelEnabled('debug')
-  Logger.isSillyEnabled = Logger.isLevelEnabled('silly')
+  if (config.handleExceptions) exceptionHandler.register(Logger)
 
   return Logger
 }

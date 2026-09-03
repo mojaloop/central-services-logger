@@ -1,7 +1,6 @@
 const udp = require('dgram')
 const stream = require('node:stream')
 const crypto = require('crypto')
-const winston = require('winston')
 const stringify = require('safe-stable-stringify')
 
 class UdpStream extends stream.Writable {
@@ -87,18 +86,27 @@ class UdpStream extends stream.Writable {
   }
 }
 
-module.exports = class UdpTransport extends winston.transports.Stream {
+/**
+ * UDP transport. Each record is sent as a stringified object shaped like the pre-v12 winston info
+ * object: { level, message, timestamp, ...meta } (from v12 on, meta arrives already redacted and
+ * expected-error suppression applies here too — both previously reached UDP unfiltered).
+ */
+module.exports = class UdpTransport {
   constructor (config) {
-    super({
-      stream: new UdpStream({
-        objectMode: true,
-        host: 'localhost',
-        port: 5170,
-        id: false,
-        max: 4096,
-        mtu: 1400,
-        ...config
-      })
+    this._stream = new UdpStream({
+      objectMode: true,
+      host: 'localhost',
+      port: 5170,
+      id: false,
+      max: 4096,
+      mtu: 1400,
+      ...config
     })
+  }
+
+  get name () { return 'udp' }
+
+  log (line, rec) {
+    this._stream.write({ level: rec.levelName, message: rec.message, timestamp: rec.time, ...rec.meta })
   }
 }

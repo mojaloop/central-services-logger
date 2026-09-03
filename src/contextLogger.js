@@ -93,6 +93,10 @@ class ContextLogger {
     this.setIsEnabledFlags()
   }
 
+  isLevelEnabled(level) {
+    return this.mlLogger.isLevelEnabled(level)
+  }
+
   formatLog(message, meta) {
     const store = asyncStorage.getStore()
 
