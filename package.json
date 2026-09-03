@@ -1,6 +1,6 @@
 {
   "name": "@mojaloop/central-services-logger",
-  "version": "13.0.0-pino-performance.1",
+  "version": "13.0.0-pino-performance.2",
   "description": "Mojaloop common logging library",
   "main": "src/index.js",
   "repository": {
