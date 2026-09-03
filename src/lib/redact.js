@@ -65,6 +65,9 @@ function containsSensitive (value, seen) {
  * Since D2/P3 it scans first and returns the input object unchanged when nothing matches.
  */
 function redactDeep (value, visited) {
+  // Error instances pass through untouched so pino's `err` serializer can render them
+  // (dispatch-level safeErr covers directly-passed Errors; see MlLogger.js)
+  if (value instanceof Error) return value
   if (visited === undefined && value !== null && typeof value === 'object' && !containsSensitive(value)) {
     return value
   }
@@ -104,4 +107,4 @@ function cloneRedacted (value, visited) {
   return clone
 }
 
-module.exports = { redactDeep, keySensitivity, isSensitiveValue }
+module.exports = { redactDeep, containsSensitive, keySensitivity, isSensitiveValue }

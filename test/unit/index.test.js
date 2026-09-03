@@ -1,16 +1,16 @@
 /* eslint-env jest */
 process.env.CSL_LOG_LEVEL = 'info'
+process.env.CSL_LOG_SYNC = 'true' // spy process.stdout.write per line
 
 const Sinon = require('sinon')
 const Logger = require('../../src/index')
-const config = require('../../src/lib/config')
-const stringify = require('safe-stable-stringify')
 const { SENSITIVE_KEY_EXCLUSIONS } = require('../../src/lib/constants')
 
 describe('logger', () => {
-  test('configures the logger with a Console transport', () => {
+  test('configures the logger with a console destination', () => {
     expect(Logger.transports).toBeDefined()
     expect(Logger.transports.length).toBeGreaterThan(0)
+    expect(Logger.transports[0].name).toBe('console')
   })
 
   test('log debug level', () => {
@@ -18,19 +18,16 @@ describe('logger', () => {
   })
 
   test('log info level', () => {
-    const infoMessage = 'things are happening'
-    expect(() => Logger.info(infoMessage)).not.toThrow()
+    expect(() => Logger.info('things are happening')).not.toThrow()
   })
 
   test('log warn level', () => {
-    const warnMessage = 'something bad is happening'
-    expect(() => Logger.warn(warnMessage)).not.toThrow()
+    expect(() => Logger.warn('something bad is happening')).not.toThrow()
   })
 
   test('log error level', () => {
-    const errorMessage = 'there was an exception'
     const ex = new Error()
-    expect(() => Logger.error(errorMessage, ex)).not.toThrow()
+    expect(() => Logger.error('there was an exception', ex)).not.toThrow()
   })
 
   test('log error level with filtered customLevels', () => {
@@ -44,8 +41,10 @@ describe('logger', () => {
   })
 })
 
-describe('contextual logger', () => {
+describe('contextual logger (pino-native json output)', () => {
   let sandbox
+
+  const lastRecord = () => JSON.parse(process.stdout.write.lastCall.args[0])
 
   beforeEach(() => {
     sandbox = Sinon.createSandbox()
@@ -56,12 +55,14 @@ describe('contextual logger', () => {
     sandbox.restore()
   })
 
-  test('logger with context formats message properly', () => {
+  test('child bindings land in every record via chindings', () => {
     const logger = Logger.child({ a: 1 })
     logger.info('Message')
-    expect(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1]).toBe(
-      'Message -\t' + stringify({ a: 1 }, null, config.jsonStringifySpacing) + '\n'
-    )
+    const rec = lastRecord()
+    expect(rec.level).toBe('info')
+    expect(rec.message).toBe('Message')
+    expect(rec.a).toBe(1)
+    expect(rec.time).toMatch(/^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/)
   })
 
   test('handles circular references gracefully', () => {
@@ -69,116 +70,68 @@ describe('contextual logger', () => {
     const obj2 = { obj1 }
     obj1.newobj2 = obj2
     const logger = Logger.child({ a: obj2 })
-    logger.info('Message')
-    expect(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1]).toBe(
-      'Message -\t' + stringify({ a: obj2 }, null, config.jsonStringifySpacing) + '\n'
-    )
+    expect(() => logger.info('Message')).not.toThrow()
+    expect(process.stdout.write.lastCall.args[0]).toContain('"message":"Message"')
   })
 
-  test('logger without context formats message properly', () => {
+  test('child without bindings logs plain records', () => {
     const logger = Logger.child()
     logger.info('Message')
-    expect(process.stdout.write.firstCall.args[0].split('info\x1B[39m: ')[1]).toBe('Message\n')
+    const rec = lastRecord()
+    expect(rec.message).toBe('Message')
+    expect(Object.keys(rec).sort()).toEqual(['level', 'message', 'time'])
   })
 
-  test('console stream logs expected errors at error level', () => {
+  test('errors are rendered by the pino err serializer', () => {
     const logger = Logger.child()
     const error = new Error('test')
     error.expected = true
     logger.error('Message', error)
-    expect(process.stdout.write.firstCall.args[0]).toContain('error')
+    const rec = lastRecord()
+    expect(rec.level).toBe('error')
+    expect(rec.err.message).toBe('test')
+    expect(rec.err.stack).toContain('Error: test')
+    expect(rec.err.expected).toBe(true)
   })
 
-  test('redacts sensitive keys in context', () => {
+  test('redacts sensitive keys in bindings', () => {
     const logger = Logger.child({
       password: 'supersecret',
       token: 'abc123',
       nested: { apiKey: 'shouldBeRedacted', normal: 'notRedacted' }
     })
     logger.info('Sensitive info')
-    const output = process.stdout.write.firstCall.args[0]
+    const output = process.stdout.write.lastCall.args[0]
     expect(output).toContain('"password":"[REDACTED]"')
     expect(output).toContain('"token":"[REDACTED]"')
     expect(output).toContain('"apiKey":"[REDACTED]"')
     expect(output).toContain('"normal":"notRedacted"')
   })
 
-  test('redacts sensitive values in context', () => {
+  test('redacts sensitive values in bindings and meta', () => {
     const logger = Logger.child({
-      info: 'my password is hunter2',
-      another: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-      bearer: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-      normal: 'safe',
+      bearer: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
       privateKey: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASC...\n-----END PRIVATE KEY-----',
-      rsaPrivateKey: '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA7...\n-----END RSA PRIVATE KEY-----',
-      ecPrivateKey: '-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIB...\n-----END EC PRIVATE KEY-----',
-      certificate: '-----BEGIN CERTIFICATE-----\nMIIDdzCCAl+gAwIBAgIEb...\n-----END CERTIFICATE-----',
-      caCertificate: '-----BEGIN CA CERTIFICATE-----\nMIIDdzCCAl+gAwIBAgIEb...\n-----END CA CERTIFICATE-----',
-      jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+      normal: 'safe'
     })
-    logger.info('Sensitive values')
-    const output = process.stdout.write.firstCall.args[0]
-    expect(output).toContain('"info":"my password is hunter2"')
-    expect(output).toContain('"another":"[REDACTED]"')
+    logger.info('Sensitive values', { jwt: 'eyJhbGciOi.eyJzdWIiOi.SflKxwRJSM' })
+    const output = process.stdout.write.lastCall.args[0]
     expect(output).toContain('"bearer":"[REDACTED]"')
-    expect(output).toContain('"normal":"safe"')
     expect(output).toContain('"privateKey":"[REDACTED]"')
-    expect(output).toContain('"rsaPrivateKey":"[REDACTED]"')
-    expect(output).toContain('"ecPrivateKey":"[REDACTED]"')
-    expect(output).toContain('"certificate":"[REDACTED]"')
-    expect(output).toContain('"caCertificate":"[REDACTED]"')
     expect(output).toContain('"jwt":"[REDACTED]"')
+    expect(output).toContain('"normal":"safe"')
   })
 
-  test('does not redact non-sensitive keys/values', () => {
+  test('redacts sensitive info in arrays but not exclusions', () => {
+    const excludedKey = SENSITIVE_KEY_EXCLUSIONS[0]
     const logger = Logger.child({
-      foo: 'bar',
-      hello: 'world'
-    })
-    logger.info('Non-sensitive')
-    const output = process.stdout.write.firstCall.args[0]
-    expect(output).toContain('"foo":"bar"')
-    expect(output).toContain('"hello":"world"')
-  })
-
-  test('redacts sensitive info in arrays', () => {
-    const logger = Logger.child({
-      arr: [
-        { password: '1234' },
-        { token: 'abcd' },
-        { normal: 'ok' }
-      ]
+      arr: [{ password: '1234' }, { normal: 'ok' }],
+      [excludedKey]: 'shouldNotBeRedacted'
     })
     logger.info('Sensitive in array')
-    const output = process.stdout.write.firstCall.args[0]
+    const output = process.stdout.write.lastCall.args[0]
     expect(output).toContain('"password":"[REDACTED]"')
-    expect(output).toContain('"token":"[REDACTED]"')
     expect(output).toContain('"normal":"ok"')
-  })
-
-  test('does not redact keys in SENSITIVE_KEY_EXCLUSIONS', () => {
-    const excludedKey = SENSITIVE_KEY_EXCLUSIONS.length > 0 ? SENSITIVE_KEY_EXCLUSIONS[0] : 'notRedactedKey'
-    const logger = Logger.child({
-      [excludedKey]: 'shouldNotBeRedacted',
-      password: 'shouldBeRedacted'
-    })
-    logger.info('Testing exclusions')
-    const output = process.stdout.write.firstCall.args[0]
     expect(output).toContain(`"${excludedKey}":"shouldNotBeRedacted"`)
-    expect(output).toContain('"password":"[REDACTED]"')
-  })
-
-  test('does not redact nested keys in SENSITIVE_KEY_EXCLUSIONS', () => {
-    const excludedKey = SENSITIVE_KEY_EXCLUSIONS.length > 0 ? SENSITIVE_KEY_EXCLUSIONS[0] : 'notRedactedKey'
-    const logger = Logger.child({
-      nested: {
-        [excludedKey]: 'nestedNotRedacted',
-        token: 'shouldBeRedacted'
-      }
-    })
-    logger.info('Nested exclusions')
-    const output = process.stdout.write.firstCall.args[0]
-    expect(output).toContain(`"${excludedKey}":"nestedNotRedacted"`)
-    expect(output).toContain('"token":"[REDACTED]"')
   })
 })

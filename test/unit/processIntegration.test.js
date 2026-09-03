@@ -51,7 +51,7 @@ describe('uncaught exception handling (winston exceptionHandlers + exitOnError:f
   })
 })
 
-describe('asynchronous writes (CSL_LOG_SYNC=false, D2/P2)', () => {
+describe('asynchronous writes (the pino-native default)', () => {
   test('every buffered line arrives after natural exit (on-exit flush)', () => {
     const res = runNode(`
       const Logger = require('./src/index')
@@ -72,14 +72,14 @@ describe('asynchronous writes (CSL_LOG_SYNC=false, D2/P2)', () => {
     expect(res.stdout).toContain('before-flush')
   })
 
-  test('the sync default still writes through process.stdout.write per call', () => {
+  test('CSL_LOG_SYNC=true opts back into per-line process.stdout.write', () => {
     const res = runNode(`
       const Logger = require('./src/index')
       const writes = []
       process.stdout.write = new Proxy(process.stdout.write, { apply (t, a, args) { writes.push(args[0]); return true } })
       Logger.info('sync-spy-check')
       console.error('spied=' + writes.filter(w => String(w).includes('sync-spy-check')).length)
-    `)
+    `, { CSL_LOG_SYNC: 'true' })
     expect(res.stderr).toContain('spied=1')
   })
 })
@@ -99,7 +99,8 @@ describe('OTel log sending (instrumentation-pino multistream wrap)', () => {
     expect(res.status).toBe(0)
     // the legacy line reached stdout through the metadata sink…
     // eslint-disable-next-line no-control-regex
-    expect(res.stdout).toMatch(/info\u001b\[39m: otel-multistream-check -\t\{"probe":1\}/)
+    expect(res.stdout).toMatch(/"message":"otel-multistream-check"/)
+    expect(res.stdout).toMatch(/"probe":1/)
     // …and the same record reached the OTel console log exporter (proves the multistream wrap is active)
     expect(res.stdout.split('otel-multistream-check').length - 1).toBeGreaterThanOrEqual(2)
   }, 60_000)

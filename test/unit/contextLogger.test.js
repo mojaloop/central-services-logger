@@ -1,5 +1,6 @@
 /* eslint-env jest */
 process.env.CSL_LOG_LEVEL = 'info'
+process.env.CSL_LOG_SYNC = 'true'
 
 const Sinon = require('sinon')
 const { propagation, context } = require('@opentelemetry/api')

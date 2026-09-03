@@ -45,7 +45,11 @@ class UdpStream extends stream.Writable {
 
   _write (message, encoding, done) {
     try {
-      message = Buffer.from(stringify(message) + '\n', encoding)
+      // newline-terminated strings arrive pre-serialised (one json line per record in the
+      // pino-native build); everything else keeps the historical stringify path
+      message = (typeof message === 'string' && message.endsWith('\n'))
+        ? Buffer.from(message, encoding)
+        : Buffer.from(stringify(message) + '\n', encoding)
 
       if (this.max && message && message.length > this.max) {
         done()
@@ -106,7 +110,7 @@ module.exports = class UdpTransport {
 
   get name () { return 'udp' }
 
-  log (line, rec) {
-    this._stream.write({ level: rec.levelName, message: rec.message, timestamp: rec.time, ...rec.meta })
+  log (line) {
+    this._stream.write(line)
   }
 }

@@ -1,5 +1,6 @@
 /* eslint-env jest */
 process.env.CSL_LOG_LEVEL = 'info'
+process.env.CSL_LOG_SYNC = 'true'
 process.env.LOG_FILTER = 'error, warn'
 
 const Logger = require('../../src/index')

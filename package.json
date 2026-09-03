@@ -39,7 +39,6 @@
     "release": "standard-version --no-verify --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'",
     "snapshot": "standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'chore(snapshot): {{currentTag}}'",
     "prepare": "husky || true",
-    "test:golden": "bash test/golden/run.sh",
     "bench": "node test/perf/bench.js > /dev/null"
   },
   "overrides": {

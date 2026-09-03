@@ -4,6 +4,6 @@ export const logTransport: any;
 export const transportFileOptions: any;
 export const jsonStringifySpacing: any;
 export const expectedErrorLevel: any;
-export const logFormat: 'legacy' | 'json';
+export const logFormat: 'json';
 export const logSync: boolean;
 export const handleExceptions: boolean;

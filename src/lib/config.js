@@ -8,17 +8,19 @@ const Config = {
   logTransport: RC.LOG_TRANSPORT?.startsWith('{') ? JSON.parse(RC.LOG_TRANSPORT) : RC.LOG_TRANSPORT,
   transportFileOptions: RC.TRANSPORT_FILE_OPTIONS,
   jsonStringifySpacing: RC.JSON_STRINGIFY_SPACING,
-  // 'legacy' (default) reproduces the pre-v12 line format byte-for-byte; 'json' emits pino newline-JSON.
-  // Deliberately CSL_LOG_FORMAT only (no bare LOG_FORMAT alias): the bare names above exist purely as
-  // pre-rc backwards compatibility, and a generic LOG_FORMAT set platform-wide by a log shipper or
-  // sidecar must not silently flip csl's output.
-  logFormat: RC.LOG_FORMAT === 'json' ? 'json' : 'legacy',
-  // D2/P2: CSL_LOG_SYNC=false switches console/file writes to buffered asynchronous mode
-  // (sonic-boom, minLength 4096, periodic + on-exit flush) — pino's documented async logging.
-  // Default true = synchronous writes, byte-for-byte v11-compatible timing semantics.
-  logSync: RC.LOG_SYNC !== false,
+  // D3 (pino-native): json is the ONLY output format. CSL_LOG_FORMAT is accepted for
+  // compatibility but anything other than 'json' logs a one-time warning and uses json.
+  logFormat: 'json',
+  // D3 (pino-native): asynchronous buffered writes are the DEFAULT (sonic-boom, 4KB buffer,
+  // periodic + on-exit flush — pino's documented max-performance mode). CSL_LOG_SYNC=true
+  // opts back into per-line synchronous writes (e.g. for tests that spy process.stdout.write).
+  logSync: RC.LOG_SYNC === true,
   // parity with winston's exceptionHandlers + exitOnError:false (log uncaught exceptions, keep running)
   handleExceptions: RC.HANDLE_EXCEPTIONS !== false
+}
+
+if (RC.LOG_FORMAT && RC.LOG_FORMAT !== 'json') {
+  console.error(`[csl] LOG_FORMAT '${RC.LOG_FORMAT}' is not available in the pino-native build; using 'json'`)
 }
 
 module.exports = Config

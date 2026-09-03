@@ -66,6 +66,9 @@ type ContextLoggerOptions = {
 declare class ContextLogger implements ILogger {
   constructor(context?: LogContext, options?: ContextLoggerOptions);
 
+  /** pino-native build: the context-bound logger the level methods emit through (context lives in chindings) */
+  boundLogger: ILogger;
+
   error: LogMethod;
   warn: LogMethod;
   info: LogMethod;

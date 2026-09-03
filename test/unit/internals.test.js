@@ -6,7 +6,7 @@ const os = require('node:os')
 const path = require('node:path')
 
 const { register, unregister } = require('../../src/lib/exceptionHandler')
-const { createTransports } = require('../../src/lib/transports')
+const { createDestination } = require('../../src/lib/transports')
 const { loggerFactory } = require('../../src/contextLogger')
 
 describe('exception handler internals', () => {
@@ -49,28 +49,39 @@ describe('exception handler internals', () => {
   })
 })
 
-describe('transport factories', () => {
-  test('file transport writes rendered lines and flushes; accepts the README `type` alias', () => {
+describe('destination factory', () => {
+  test('file destination writes lines and flushes; accepts the README `type` alias', () => {
     const file = path.join(os.tmpdir(), `csl-test-${Date.now()}.log`)
-    const [t] = createTransports({ logTransport: { out: { type: 'file', filename: file } } })
-    expect(t.name).toBe('file')
-    t.log('a line\n')
-    t.flushSync()
-    expect(fs.readFileSync(file, 'utf8')).toBe('a line\n')
+    const dest = createDestination({ logTransport: { out: { type: 'file', filename: file } }, logSync: true })
+    expect(dest.descriptors[0].name).toBe('file')
+    dest.stream.write('{"a":1}\n')
+    dest.flushSync()
+    expect(fs.readFileSync(file, 'utf8')).toBe('{"a":1}\n')
     fs.unlinkSync(file)
   })
 
-  test('file transport without filename and unknown kinds fail fast', () => {
-    expect(() => createTransports({ logTransport: 'file', transportFileOptions: {} }))
+  test('file destination without filename and unknown kinds fail fast', () => {
+    expect(() => createDestination({ logTransport: 'file', transportFileOptions: {}, logSync: true }))
       .toThrow('CSL: LOG_TRANSPORT=file requires TRANSPORT_FILE_OPTIONS.filename')
-    expect(() => createTransports({ logTransport: { weird: { transport: 'http' } } }))
+    expect(() => createDestination({ logTransport: { weird: { transport: 'http' } }, logSync: true }))
       .toThrow("CSL: unsupported LOG_TRANSPORT kind 'http'")
   })
 
-  test('udp transport descriptor sends the v11-shaped record', () => {
-    const [t] = createTransports({ logTransport: { udp: { transport: 'udp', port: 51701 } } })
-    expect(t.name).toBe('udp')
-    expect(() => t.log('ignored', { levelName: 'info', message: 'm', time: 'T', meta: { a: 1 } })).not.toThrow()
+  test('udp destination accepts serialised json lines', () => {
+    const dest = createDestination({ logTransport: { udp: { transport: 'udp', port: 51701 } }, logSync: true })
+    expect(dest.descriptors[0].name).toBe('udp')
+    expect(() => dest.stream.write('{"level":"info","message":"m"}\n')).not.toThrow()
+  })
+
+  test('a multi-transport map builds a pino multistream with native per-transport levels', () => {
+    const file = path.join(os.tmpdir(), `csl-ms-${Date.now()}.log`)
+    const dest = createDestination({
+      logTransport: { console: { transport: 'console' }, out: { transport: 'file', filename: file, level: 'error' } },
+      logSync: true
+    })
+    expect(dest.descriptors.map(d => d.name)).toEqual(['console', 'file'])
+    expect(typeof dest.stream.write).toBe('function')
+    fs.existsSync(file) && fs.unlinkSync(file)
   })
 })
 

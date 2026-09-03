@@ -3,7 +3,9 @@
 [![Git Releases](https://img.shields.io/github/release/mojaloop/central-services-logger.svg?style=flat)](https://github.com/mojaloop/central-services-logger/releases)
 [![CircleCI](https://circleci.com/gh/mojaloop/central-services-logger.svg?style=svg)](https://circleci.com/gh/mojaloop/central-services-logger)
 
-Common shared Logging lib for Mojaloop components, backed by [pino](https://github.com/pinojs/pino). The default output format is byte-identical to the historical (winston-era, ≤ v11) line format; set `CSL_LOG_FORMAT=json` for structured newline-JSON output.
+Common shared Logging lib for Mojaloop components, backed by [pino](https://github.com/pinojs/pino).
+
+**This is the pino-native (max-performance) build**: structured one-line JSON is the only output format, asynchronous buffered writes are the default, child/context bindings use pino-native chindings, and Errors render through pino's standard `err` serializer. It is NOT output-compatible with the winston-era (≤ v11) line format or with the pino-compatible build's legacy mode.
 
 ## Configuration
 
@@ -19,8 +21,8 @@ Edit the file in `./config/default.json` to configure the logger, or set the fol
 | `CSL_LOG_FILTER` | Applies a log filter. Specify a comma separated list of individual log levels to be included instead of specifying a `LOG_LEVEL` | `""` | e.g. `"error, trace, verbose" |
 | `CSL_LOG_TRANSPORT` | Selects the transport method. Either `console`, `file` or a map for multiple transports. Uses the same transport for errors and standard logs | `console` | `console`, `file`, `{}` |
 | `CSL_TRANSPORT_FILE_OPTIONS` | _Optional._ Required if `LOG_TRANSPORT=file`. `filename` is mandatory; an optional `level` restricts the transport; legacy winston-era keys are ignored | See `default.json` | `{ "filename": "logs/combined.log" }` |
-| `CSL_LOG_FORMAT` | Output format: `legacy` reproduces the pre-v12 line format byte-for-byte; `json` emits one-line pino JSON (`level` label, ISO `time`, `message` key) | `legacy` | `legacy`, `json` |
-| `CSL_LOG_SYNC` | `false` switches console/file writes to buffered asynchronous mode (sonic-boom, 4KB buffer, periodic + on-exit flush; `Logger.flush()` drains on demand). Trade-off: a direct signal kill without a shutdown handler can lose the buffered tail | `true` | `true`, `false` |
+| `CSL_LOG_FORMAT` | Accepted for compatibility; json is the only format in this build (anything else warns and uses json) | `json` | `json` |
+| `CSL_LOG_SYNC` | Asynchronous buffered writes are the DEFAULT (sonic-boom, 4KB buffer, periodic + on-exit flush; `Logger.flush()` drains on demand; a direct signal kill without a shutdown handler can lose the buffered tail). Set `true` for per-line synchronous `process.stdout.write` (e.g. tests that spy stdout) | `false` | `true`, `false` |
 | `CSL_JSON_STRINGIFY_SPACING` |  _Optional._  A number that's used to insert white space into the output JSON string for readability purposes. | 0 | integer
 | `EXPECTED_ERROR_LEVEL` | Set log level for expected errors or turn off logging them when `false` | `info` | Log levels, `false` |
 | `CSL_HANDLE_EXCEPTIONS` | Log uncaught exceptions through the logger and keep the process running (pre-v12 parity). Set to `false` to restore Node's default crash behaviour | `true` | `true`, `false` |
@@ -96,6 +98,14 @@ Logger.isDebugEnabled && Logger.debug(`payload: ${JSON.stringify(payload)}`)
 ```
 
 By default, the Logger logs to the console only, with timestamps and colorized output. Sensitive keys and values (tokens, secrets, PEM/JWT material, ...) are redacted before a record reaches any transport or OpenTelemetry log exporter.
+
+### pino-native build: output differences vs the pino-compatible build
+
+* json is the only format; the legacy line renderer and the byte-exact golden gate are removed.
+* Context/bindings serialise once as pino chindings (fastest); call meta layers on top (duplicate keys are pino-native: last one wins on parse — avoid `level`/`time`/`message` keys in meta).
+* Errors nest under the `err` key via pino's standard serializer (`type`/`message`/`stack` + enumerables + cause chain); messages are no longer appended with `err.message`.
+* Expected-error (OTel baggage) handling lives in `ContextLogger` (the layer that knows the context).
+* Per-transport runtime `level`/`silent` mutation is gone (multistream handles per-transport levels at construction); use `Logger.level` / `Logger.silent`.
 
 ### v12 behaviour changes (winston → pino)
 

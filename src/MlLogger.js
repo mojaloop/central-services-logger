@@ -2,158 +2,95 @@
 
 const pino = require('pino')
 const config = require('./lib/config')
-const { allLevels, LEVEL_VALUES, LEVEL_LABELS, LEVEL_NAMES } = require('./lib/constants')
-const { normaliseArgs } = require('./lib/args')
-const { redactDeep } = require('./lib/redact')
-const { applyErrorExpect } = require('./lib/errorExpect')
-const { renderLegacyLine } = require('./lib/legacyFormat')
+const { allLevels, LEVEL_VALUES, LEVEL_NAMES } = require('./lib/constants')
+const { redactDeep, containsSensitive } = require('./lib/redact')
+const { createDestination } = require('./lib/transports')
 
 // Internal state lives under Symbols — invisible to sinon's stub-walk and jest's automock recursion.
 // NEVER convert these to ES `#` private fields: children are Object.create(parent) and never run the
 // constructor, so `#`-field access through the prototype chain throws; Symbol/own-prop reads do not.
 const kRoot = Symbol('csl.root')
 const kPino = Symbol('csl.pino')
-const kBindings = Symbol('csl.bindings')
 const kLevel = Symbol('csl.level')
 const kSilent = Symbol('csl.silent')
 const kFilter = Symbol('csl.filter')
 const kTransports = Symbol('csl.transports')
-const kMode = Symbol('csl.mode')
+const kFlush = Symbol('csl.flush')
 const kEnabled = Symbol('csl.enabled')
-const kRaw = Symbol('csl.rawTransport')
 
 let idCounter = 0
 
 const capitalized = LEVEL_NAMES.map(name => name.charAt(0).toUpperCase() + name.slice(1))
 
-function levelPassesTransports (root, levelName) {
-  const value = allLevels[levelName]
-  for (const t of root[kTransports]) {
-    if (!t.silent && value <= allLevels[t.level ?? root[kLevel]]) return true
-  }
-  return false
+/**
+ * Errors are handed to pino's standard `err` serializer untouched (fast path) unless their
+ * enumerable own props carry sensitive material — then a redacted plain-object copy goes instead.
+ */
+function safeErr (err) {
+  if (!containsSensitive({ ...err })) return err
+  return redactDeep({ ...err, type: err.name, message: err.message, stack: err.stack })
 }
 
 /**
- * A transport descriptor: `name` for identification, writable `level`/`silent` (winston-compatible
- * runtime controls — changing them recomputes the root's is*Enabled flags), and `log(line, rec)`.
+ * D3 (pino-native) dispatch: flip the historical csl call convention (message, meta, ...) onto
+ * pino's native (mergingObject, message, ...interpolation) and get out of the way.
+ * No legacy renderer, no bindings merge (context/bindings live in pino chindings), no
+ * per-call expected-error handling (that moved to ContextLogger, where context exists).
  */
-function wrapTransport (raw, root) {
-  const handle = { name: raw.name, [kRaw]: raw }
-  let level = raw.level
-  let silent = false
-  Object.defineProperties(handle, {
-    level: {
-      enumerable: true,
-      get () { return level },
-      set (value) { level = value; root.resync() }
-    },
-    silent: {
-      enumerable: true,
-      get () { return silent },
-      set (value) { silent = !!value; root.resync() }
-    }
-  })
-  handle.log = (line, rec) => raw.log(line, rec)
-  if (raw.flushSync) handle.flushSync = () => raw.flushSync()
-  return handle
-}
-
-function createSink (root) {
-  const sink = {
-    [Symbol.for('pino.metadata')]: true,
-    write (jsonLine) {
-      const levelName = LEVEL_LABELS[sink.lastLevel] || 'info'
-      const rec = {
-        levelName,
-        // pino.stdTimeFunctions.isoTime hands the sink the ISO string still wrapped in JSON quotes
-        time: typeof sink.lastTime === 'string' ? sink.lastTime.slice(1, -1) : new Date(sink.lastTime || Date.now()).toISOString(),
-        message: sink.lastMsg === undefined || sink.lastMsg === null ? '' : sink.lastMsg,
-        meta: sink.lastObj
-      }
-      const line = root[kMode] === 'json' ? jsonLine : renderLegacyLine(rec, config.jsonStringifySpacing)
-      const value = allLevels[levelName]
-      for (const t of root[kTransports]) {
-        if (!t.silent && value <= allLevels[t.level ?? root[kLevel]]) t.log(line, rec)
-      }
-      return true
-    },
-    flushSync () {
-      for (const t of root[kTransports]) t.flushSync?.()
-    }
-  }
-  return sink
-}
-
 function dispatch (self, levelName, args) {
   const root = self[kRoot]
   if (!root[kEnabled][levelName]) return self
+  const p = self[kPino]
+  const message = args[0]
 
-  const bindings = self[kBindings]
-  const arg0 = args[0]
-
-  // D2/P3 fast path: a bare primitive message with no bindings needs no normalisation,
-  // no expected-error handling (that requires meta) and no redaction
-  if (args.length < 2 && bindings === undefined && (arg0 === null || typeof arg0 !== 'object')) {
-    root[kPino][levelName](arg0 === undefined ? '' : String(arg0))
+  if (args.length < 2) {
+    if (message === null || typeof message !== 'object') {
+      p[levelName](message ?? '')
+    } else if (message instanceof Error) {
+      p[levelName](safeErr(message)) // pino: Error first arg → errorKey + msg from err.message
+    } else {
+      p[levelName](redactDeep(message))
+    }
     return self
   }
 
-  let { message, meta } = normaliseArgs(args)
-  let effectiveLevel = levelName
-
-  if (meta && (levelName === 'error' || levelName === 'warn')) {
-    const outcome = applyErrorExpect(meta)
-    if (outcome.drop) return self
-    if (outcome.meta) meta = outcome.meta
-    if (outcome.level) {
-      effectiveLevel = outcome.level
-      // the re-levelled record still has to pass a transport at its new level (LOG_FILTER
-      // only gates the original method call, as in v11)
-      if (!levelPassesTransports(root, effectiveLevel)) return self
-    }
+  const meta = args[1]
+  if (meta === null || typeof meta !== 'object') {
+    // (message, ...interpolation) — pino-native printf handling, extras without tokens dropped
+    p[levelName](...args)
+    return self
   }
-
-  if (meta) meta = redactDeep(meta)
-  // normaliseArgs always returns an owned copy for meta, and stored bindings are pre-redacted,
-  // so either can be handed to pino directly — merge only when both sides exist (D2/P3)
-  let merged = meta === undefined
-    ? bindings
-    : (bindings === undefined ? meta : Object.assign({}, bindings, meta))
-
-  if (merged && root[kMode] === 'json' && 'time' in merged) {
-    // pino serialises its own `time`; a meta `time` key would produce duplicate JSON keys
-    merged = { ...merged }
-    delete merged.time
-  }
-
-  const pinoRoot = root[kPino]
-  if (merged === undefined) pinoRoot[effectiveLevel](message)
-  else pinoRoot[effectiveLevel](merged, message)
+  const payload = meta instanceof Error ? { err: safeErr(meta) } : redactDeep(meta)
+  if (args.length === 2) p[levelName](payload, message)
+  else p[levelName](payload, message, ...args.slice(2))
   return self
 }
 
 class MlLogger {
-  constructor ({ level, filter, mode, transports }) {
+  constructor ({ level, filter }) {
     this[kRoot] = this
     this[kSilent] = false
     this[kFilter] = filter || null
-    this[kMode] = mode === 'json' ? 'json' : 'legacy'
     if (allLevels[level] === undefined) {
       console.error(`[csl] Unknown LOG_LEVEL '${level}', falling back to 'info'`)
       level = 'info'
     }
     this[kLevel] = level
-    this[kTransports] = transports.map(raw => wrapTransport(raw, this))
+    const destination = createDestination(config)
+    this[kTransports] = destination.descriptors
+    this[kFlush] = destination.flushSync
     this[kPino] = pino({
-      level: 'silly', // pino never gates — the wrapper is the gate (winston's transport levels can widen)
+      // pino's own level stays pinned open and the wrapper gates via cached flags:
+      // pino children snapshot their level methods at creation, which would break csl's
+      // family-wide setLevel semantics; the wrapper gate costs a cached boolean read (~ns).
+      level: 'silly',
       customLevels: LEVEL_VALUES,
       useOnlyCustomLevels: true,
       messageKey: 'message',
       base: null,
       timestamp: pino.stdTimeFunctions.isoTime,
       formatters: { level: (label) => ({ level: label }) }
-    }, createSink(this))
+    }, destination.stream)
     this.id = ++idCounter
     this.levels = allLevels
     this.resync()
@@ -162,12 +99,13 @@ class MlLogger {
   resync () {
     const root = this[kRoot]
     const filter = root[kFilter]
+    const levelValue = allLevels[root[kLevel]]
     const enabled = {}
     for (let i = 0; i < LEVEL_NAMES.length; i++) {
       const name = LEVEL_NAMES[i]
       enabled[name] = !root[kSilent] &&
         (!filter || filter.has(name)) &&
-        levelPassesTransports(root, name)
+        allLevels[name] <= levelValue
       root[`is${capitalized[i]}Enabled`] = enabled[name]
     }
     root[kEnabled] = enabled
@@ -181,10 +119,8 @@ class MlLogger {
   child (bindings) {
     const child = Object.create(this)
     if (bindings !== null && typeof bindings === 'object') {
-      const cleaned = Object.assign({}, this[kBindings], bindings)
-      delete cleaned.level
-      delete cleaned.message
-      child[kBindings] = redactDeep(cleaned)
+      // pino-native child: bindings are redacted once and serialised once (chindings)
+      child[kPino] = this[kPino].child(redactDeep(bindings))
     }
     return child
   }
@@ -198,7 +134,7 @@ class MlLogger {
   }
 
   flush () {
-    for (const t of this[kRoot][kTransports]) t.flushSync?.()
+    this[kRoot][kFlush]()
   }
 }
 

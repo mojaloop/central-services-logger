@@ -1,40 +1,55 @@
 'use strict'
 /*
- * Micro-benchmark at the D1 measurement point, extended for D2:
- *   v11 (winston, `csl11` alias) | D1 legacy/json (the major/pino checkout) | D2 legacy/json (this
- *   worktree, P3 optimisations) | D2 async (CSL_LOG_SYNC=false, P2).
+ * D3 micro-benchmark: v11 (winston) | D1-json | D2 json+async | D3 sync | D3 (default: json+async,
+ * pino-native children) | raw pino (the ceiling: no wrapper, native call convention).
  * Run: npm run bench   (log output goes to stdout — discarded; results print to stderr)
- * Evidence for mojaloop/project #3621 / #4543.
+ * Protocol: interleaved rounds, medians + spread (never compare single passes).
  */
 const { spawnSync } = require('node:child_process')
 
 const D1_PATH = process.env.CSL_D1_PATH || '/Users/jc/ml/central-services-logger'
+const D2_PATH = process.env.CSL_D2_PATH || '/Users/jc/ml/central-services-logger-pino-performance'
 
 const TARGETS = {
   v11: { module: 'csl11' },
-  'd1-legacy': { module: D1_PATH },
   'd1-json': { module: D1_PATH, env: { CSL_LOG_FORMAT: 'json' } },
-  'd2-legacy': { module: '../../src/index' },
-  'd2-json': { module: '../../src/index', env: { CSL_LOG_FORMAT: 'json' } },
-  'd2-legacy-async': { module: '../../src/index', env: { CSL_LOG_SYNC: 'false' } },
-  'd2-json-async': { module: '../../src/index', env: { CSL_LOG_FORMAT: 'json', CSL_LOG_SYNC: 'false' } }
+  'd2-json-async': { module: D2_PATH, env: { CSL_LOG_FORMAT: 'json', CSL_LOG_SYNC: 'false' } },
+  'd3-sync': { module: '../../src/index', env: { CSL_LOG_SYNC: 'true' } },
+  d3: { module: '../../src/index' },
+  'raw-pino': { raw: true }
 }
 
-function runScenarios (Logger) {
+function makeRawLogger () {
+  const pino = require('pino')
+  return pino({ base: null, timestamp: pino.stdTimeFunctions.isoTime, messageKey: 'message' },
+    pino.destination({ fd: 1, sync: false, minLength: 4096 }))
+}
+
+function runScenarios (Logger, raw) {
   const { performance } = require('node:perf_hooks')
   const err = new Error('bench error')
   err.code = 'E_BENCH'
-  const child = Logger.child ? Logger.child({ component: 'bench' }) : Logger
   const meta = { a: 1, b: 'two', nested: { c: 3 } }
+  const child = raw ? Logger.child({ component: 'bench' }) : Logger.child({ component: 'bench' })
 
-  const scenarios = {
-    'plain message': [200_000, i => Logger.info('hello world ' + (i & 7))],
-    'message + meta': [200_000, i => Logger.info('hello', meta)],
-    'message + Error': [100_000, i => Logger.error('failed', err)],
-    'child + meta': [200_000, i => child.info('c', meta)],
-    'disabled level (guarded)': [2_000_000, i => Logger.isDebugEnabled && Logger.debug('skip ' + i)],
-    'disabled level (unguarded)': [2_000_000, i => Logger.debug('skip')]
-  }
+  // raw pino uses its native (mergingObject, message) convention and has no cached flags
+  const scenarios = raw
+    ? {
+        'plain message': [200_000, i => Logger.info('hello world ' + (i & 7))],
+        'message + meta': [200_000, () => Logger.info(meta, 'hello')],
+        'message + Error': [100_000, () => Logger.error({ err }, 'failed')],
+        'child + meta': [200_000, () => child.info(meta, 'c')],
+        'disabled level (guarded)': [2_000_000, i => Logger.isLevelEnabled('debug') && Logger.debug('skip ' + i)],
+        'disabled level (unguarded)': [2_000_000, () => Logger.debug('skip')]
+      }
+    : {
+        'plain message': [200_000, i => Logger.info('hello world ' + (i & 7))],
+        'message + meta': [200_000, () => Logger.info('hello', meta)],
+        'message + Error': [100_000, () => Logger.error('failed', err)],
+        'child + meta': [200_000, () => child.info('c', meta)],
+        'disabled level (guarded)': [2_000_000, i => Logger.isDebugEnabled && Logger.debug('skip ' + i)],
+        'disabled level (unguarded)': [2_000_000, () => Logger.debug('skip')]
+      }
 
   const results = {}
   for (const [name, [n, fn]] of Object.entries(scenarios)) {
@@ -50,11 +65,9 @@ function runScenarios (Logger) {
 
 if (process.env.BENCH_TARGET) {
   const target = TARGETS[process.env.BENCH_TARGET]
-  const Logger = require(target.module)
-  console.error(JSON.stringify(runScenarios(Logger)))
+  const Logger = target.raw ? makeRawLogger() : require(target.module)
+  console.error(JSON.stringify(runScenarios(Logger, !!target.raw)))
 } else {
-  // Interleaved rounds + medians + spread: the same noise-gate protocol the fleet baselines use —
-  // back-to-back blocks confound variant with machine drift, so never compare single passes.
   const REPS = Number(process.env.BENCH_REPS || 5)
   const names = Object.keys(TARGETS)
   const samples = Object.fromEntries(names.map(n => [n, {}]))
@@ -64,7 +77,7 @@ if (process.env.BENCH_TARGET) {
       const res = spawnSync(process.execPath, [__filename], {
         cwd: __dirname,
         env: { ...process.env, CSL_LOG_LEVEL: 'info', BENCH_TARGET: name, ...(TARGETS[name].env || {}) },
-        stdio: ['ignore', 'ignore', 'pipe'], // stdout (the log lines) is discarded
+        stdio: ['ignore', 'ignore', 'pipe'],
         encoding: 'utf8',
         timeout: 300_000
       })
@@ -84,28 +97,25 @@ if (process.env.BENCH_TARGET) {
   }
   const all = Object.fromEntries(names.map(n =>
     [n, Object.fromEntries(Object.entries(samples[n]).map(([s, arr]) => [s, median(arr)]))]))
-  const spread = (n, s) => {
-    const arr = samples[n][s]
-    return `${Math.min(...arr)}..${Math.max(...arr)}`
-  }
+  const spread = (n, s) => `${Math.min(...samples[n][s])}..${Math.max(...samples[n][s])}`
 
   const scenarios = Object.keys(all.v11)
   const width = Math.max(...scenarios.map(s => s.length)) + 2
   console.error(`\nmedian ops/sec of ${REPS} interleaved rounds (higher is better) — node ${process.version}\n`)
-  console.error(''.padEnd(width) + names.map(h => h.padStart(16)).join(''))
+  console.error(''.padEnd(width) + names.map(h => h.padStart(15)).join(''))
   for (const s of scenarios) {
-    console.error(s.padEnd(width) + names.map(t => String(all[t][s]).padStart(16)).join(''))
+    console.error(s.padEnd(width) + names.map(t => String(all[t][s]).padStart(15)).join(''))
   }
   console.error('\nmin..max spread per target:')
   for (const s of scenarios) {
-    console.error(`  ${s.padEnd(width)}` + names.map(t => spread(t, s).padStart(24)).join(''))
+    console.error(`  ${s.padEnd(width)}` + names.map(t => spread(t, s).padStart(22)).join(''))
   }
   console.error('\nmedian ratios per scenario:')
   for (const s of scenarios) {
     const r = (a, b) => (all[a][s] / all[b][s]).toFixed(2)
     console.error(
-      `  ${s.padEnd(width)} d2-json/v11=${r('d2-json', 'v11')}  d2-json/d1-json=${r('d2-json', 'd1-json')}  ` +
-      `d2-legacy/d1-legacy=${r('d2-legacy', 'd1-legacy')}  json-async/json-sync=${r('d2-json-async', 'd2-json')}  legacy-async/legacy-sync=${r('d2-legacy-async', 'd2-legacy')}`
+      `  ${s.padEnd(width)} d3/v11=${r('d3', 'v11')}  d3/d2-json-async=${r('d3', 'd2-json-async')}  ` +
+      `d3/d3-sync=${r('d3', 'd3-sync')}  raw/d3=${r('raw-pino', 'd3')}`
     )
   }
   console.error('')

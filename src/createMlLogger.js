@@ -34,7 +34,6 @@
 
 const config = require('./lib/config')
 const { MlLogger } = require('./MlLogger')
-const { createTransports } = require('./lib/transports')
 const exceptionHandler = require('./lib/exceptionHandler')
 
 const parseFilter = (customLevels) => {
@@ -45,10 +44,8 @@ const parseFilter = (customLevels) => {
 const createMlLogger = () => {
   const Logger = new MlLogger({
     level: config.level,
-    // LOG_FILTER is a whitelist of level names; v12 also reflects it in is*Enabled/isLevelEnabled
-    filter: parseFilter(config.customLevels),
-    mode: config.logFormat,
-    transports: createTransports(config)
+    // LOG_FILTER is a whitelist of level names, reflected in is*Enabled/isLevelEnabled
+    filter: parseFilter(config.customLevels)
   })
 
   if (config.handleExceptions) exceptionHandler.register(Logger)

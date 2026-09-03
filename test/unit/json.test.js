@@ -1,12 +1,8 @@
 /* eslint-env jest */
 process.env.CSL_LOG_LEVEL = 'info'
-process.env.CSL_LOG_FORMAT = 'json'
+process.env.CSL_LOG_SYNC = 'true' // json is the only format in the pino-native build
 
 const Logger = require('../../src/index')
-
-afterAll(() => {
-  delete process.env.CSL_LOG_FORMAT
-})
 
 function captureRaw (fn) {
   const lines = []
@@ -33,12 +29,12 @@ describe('CSL_LOG_FORMAT=json', () => {
     expect(rec.hostname).toBeUndefined()
   })
 
-  test('a meta `time` key is dropped so the record has no duplicate keys', () => {
+  test('a meta `time` key duplicates pino\'s own (pino-native semantics; last one wins on parse)', () => {
     const [line] = captureRaw(() => Logger.info('t', { time: 'T-META', b: 2 }))
-    expect(line.match(/"time":/g)).toHaveLength(1)
+    expect(line.match(/"time":/g)).toHaveLength(2)
     const rec = JSON.parse(line)
     expect(rec.b).toBe(2)
-    expect(rec.time).toMatch(/Z$/)
+    expect(rec.time).toBe('T-META')
   })
 
   test('bindings and meta are redacted before serialisation', () => {
@@ -51,11 +47,12 @@ describe('CSL_LOG_FORMAT=json', () => {
     expect(rec.ok).toBe(1)
   })
 
-  test('errors carry message and stack in the record', () => {
+  test('errors nest under the err serializer', () => {
     const err = new Error('boom')
     const [line] = captureRaw(() => Logger.error('failed', err))
     const rec = JSON.parse(line)
-    expect(rec.message).toBe('failed boom')
-    expect(rec.stack).toContain('Error: boom')
+    expect(rec.message).toBe('failed')
+    expect(rec.err.message).toBe('boom')
+    expect(rec.err.stack).toContain('Error: boom')
   })
 })

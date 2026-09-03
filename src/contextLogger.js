@@ -30,6 +30,7 @@
 const { AsyncLocalStorage } = require('node:async_hooks')
 const createMlLogger = require('./createMlLogger')
 const { allLevels } = require('./lib/constants')
+const { applyErrorExpect } = require('./lib/errorExpect')
 
 const asyncStorage = new AsyncLocalStorage()
 
@@ -39,49 +40,68 @@ class ContextLogger {
   constructor(context, options = {}) {
     this.mlLogger = options?.mlLogger || createMlLogger()
     this.context = this.createContext(context)
+    // D3 (pino-native): the context is bound ONCE as pino chindings (serialised once per
+    // instance) instead of being spread into every call's meta. `mlLogger` stays the ROOT
+    // (subclass/ctor contract), `boundLogger` is what the level methods emit through.
+    this.boundLogger = this.context ? this.mlLogger.child(this.context) : this.mlLogger
     this.setIsEnabledFlags()
   }
 
   error(message, meta) {
-    this.isErrorEnabled && this.mlLogger.error(...this.formatLog(message, meta))
+    if (!this.isErrorEnabled) return
+    this.logExpected('error', message, meta)
   }
 
   warn(message, meta) {
-    this.isWarnEnabled && this.mlLogger.warn(...this.formatLog(message, meta))
+    if (!this.isWarnEnabled) return
+    this.logExpected('warn', message, meta)
   }
 
   info(message, meta) {
-    this.isInfoEnabled && this.mlLogger.info(...this.formatLog(message, meta))
+    this.isInfoEnabled && this.boundLogger.info(...this.formatLog(message, meta))
   }
 
   verbose(message, meta) {
-    this.isVerboseEnabled && this.mlLogger.verbose(...this.formatLog(message, meta))
+    this.isVerboseEnabled && this.boundLogger.verbose(...this.formatLog(message, meta))
   }
 
   debug(message, meta) {
-    this.isDebugEnabled && this.mlLogger.debug(...this.formatLog(message, meta))
+    this.isDebugEnabled && this.boundLogger.debug(...this.formatLog(message, meta))
   }
 
   silly(message, meta) {
-    this.isSillyEnabled && this.mlLogger.silly(...this.formatLog(message, meta))
+    this.isSillyEnabled && this.boundLogger.silly(...this.formatLog(message, meta))
   }
 
   audit (message, meta) {
-    this.isAuditEnabled && this.mlLogger.audit(...this.formatLog(message, meta))
+    this.isAuditEnabled && this.boundLogger.audit(...this.formatLog(message, meta))
   }
 
   trace(message, meta) {
-    this.isTraceEnabled && this.mlLogger.trace(...this.formatLog(message, meta))
+    this.isTraceEnabled && this.boundLogger.trace(...this.formatLog(message, meta))
   }
 
   perf(message, meta) {
-    this.isPerfEnabled && this.mlLogger.perf(...this.formatLog(message, meta))
+    this.isPerfEnabled && this.boundLogger.perf(...this.formatLog(message, meta))
+  }
+
+  /**
+   * error/warn go through OTel-baggage expected-error handling (suppression or re-level).
+   * D3: this lives here — the logging context needed to match `<context>.<errorCode>`
+   * travels in chindings, so only the ContextLogger knows it.
+   */
+  logExpected(levelName, message, meta) {
+    const outcome = applyErrorExpect(this.context?.context, meta)
+    if (outcome.drop) return
+    const level = outcome.level || levelName
+    if (outcome.level && !this.mlLogger.isLevelEnabled(level)) return
+    this.boundLogger[level](...this.formatLog(message, meta, outcome.expected))
   }
 
   child(context) {
     const { mlLogger } = this
     const childContext = this.createContext(context)
-    return new ContextLogger(Object.assign({}, this.context, childContext), { mlLogger })
+    return new this.constructor(Object.assign({}, this.context, childContext), { mlLogger })
   }
 
   setLevel(level) {
@@ -97,16 +117,19 @@ class ContextLogger {
     return this.mlLogger.isLevelEnabled(level)
   }
 
-  formatLog(message, meta) {
+  formatLog(message, meta, expected) {
     const store = asyncStorage.getStore()
+    const extra = expected ? { expected } : null
 
-    if (!meta && !this.context && !store) return [message]
-
-    const metaData = meta instanceof Error
-      ? ContextLogger.formatError(meta)
-      : typeof meta === 'object' ? meta : { meta }
-
-    return [message, { ...store, ...this.context, ...metaData }]
+    if (meta === null || meta === undefined) {
+      return (store || extra) ? [message, { ...store, ...extra }] : [message]
+    }
+    if (meta instanceof Error) {
+      // keep the Error intact — pino's `err` serializer renders it (type/message/stack/cause)
+      return (store || extra) ? [message, { ...store, ...extra, err: meta }] : [message, meta]
+    }
+    const metaData = typeof meta === 'object' ? meta : { meta }
+    return (store || extra) ? [message, { ...store, ...extra, ...metaData }] : [message, metaData]
   }
 
   createContext(context) {
