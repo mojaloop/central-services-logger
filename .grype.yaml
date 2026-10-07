@@ -1,25 +1,17 @@
 disabled: false
+
+# For repos that do not produce a container image, use source scanning
 scan-type: source
+
 ignore:
-  - vulnerability: GHSA-mh99-v99m-4gvg
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-06'
-  - vulnerability: GHSA-rgw5-rvv9-x895
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-06'
-  - vulnerability: GHSA-q2hr-2g5m-vwhr
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-06'
-  - vulnerability: GHSA-qhr7-859c-m2p7
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-06'
-  - vulnerability: GHSA-6j4f-fj2g-mc7p
-    include-aliases: true
-    reason: 'Unfixable npm transitive vulnerability: unknown (unknown severity) as of 2026-10-06'
+
+# Set output format defaults
 output:
-  - table
-  - json
+  - "table"
+  - "json"
+
+# Modify your CircleCI job to check critical count
 search:
-  scope: squashed
+  scope: "squashed"
 quiet: false
 check-for-app-update: false
