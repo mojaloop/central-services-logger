@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [11.10.7](https://github.com/mojaloop/central-services-logger/compare/v11.10.6...v11.10.7) (2026-10-10)
+
+
+### Bug Fixes
+
+* **security:** patch 1 vulnerability ([#86](https://github.com/mojaloop/central-services-logger/issues/86)) ([b62ab3d](https://github.com/mojaloop/central-services-logger/commit/b62ab3dfa3031b51402e6929324cfab31ac41099))
+* **security:** scope security overrides, Node 24 + orb 2.1.7 ([#84](https://github.com/mojaloop/central-services-logger/issues/84)) ([7e42cd2](https://github.com/mojaloop/central-services-logger/commit/7e42cd21416441d5c17b99227d260cb7f32a84c0))
+
 ### [11.10.6](https://github.com/mojaloop/central-services-logger/compare/v11.10.5...v11.10.6) (2026-07-08)
 
 ### [11.10.5](https://github.com/mojaloop/central-services-logger/compare/v11.10.4...v11.10.5) (2026-06-26)
