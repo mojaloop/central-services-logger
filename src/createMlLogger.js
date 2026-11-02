@@ -33,13 +33,14 @@
 'use strict'
 
 const { propagation } = require('@opentelemetry/api')
-const { createLogger, format, transports: winstonTransports } = require('winston')
+const { createLogger, format } = require('winston')
 const { LEVEL } = require('triple-beam')
 const config = require('./lib/config')
 const { customLevels, level, logTransport, transportFileOptions } = config
 const { allLevels } = require('./lib/constants')
 const UdpTransport = require('./UdpTransport')
 const ConsoleTransport = require('./ConsoleTransport')
+const FileTransport = require('./FileTransport')
 const HttpTransport = require('./HttpTransport')
 const { register } = require('./lib/finish')
 
@@ -70,7 +71,7 @@ const errorExpect = format(info => {
 
 const transportsMap = {
   console: ConsoleTransport,
-  file: winstonTransports.File,
+  file: FileTransport,
   http: HttpTransport,
   udp: UdpTransport
 }
@@ -78,7 +79,7 @@ const transportsMap = {
 const createMlLogger = () => {
   let transports
   if (logTransport === 'file') {
-    transports = [new winstonTransports.File(transportFileOptions)]
+    transports = [new FileTransport(transportFileOptions)]
   } else if (typeof logTransport === 'object') {
     transports = Object.entries(logTransport).map(([name, { transport = name, ...config }]) => new transportsMap[transport](config))
   } else transports = [new ConsoleTransport()]
