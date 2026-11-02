@@ -26,19 +26,21 @@ Edit the file in `./config/default.json` to configure the logger, or set the fol
 
 The `CSL_LOG_TRANSPORT` environment variable can be set to a JSON object to
 configure multiple transports. The key names can be any string, and the values
-should be objects that contain the transport type and configuration, e.g.:
+should be objects that contain the transport type and configuration. The
+`transport` field selects the type (`console`, `file`, `http` or `udp`); when it
+is absent, the key name is used as the type, e.g.:
 
 ```json
 {
   "stdout": {
-    "type": "console"
+    "transport": "console"
   },
   "fluentbit": {
-    "type": "udp",
+    "transport": "udp",
     "host": "fluentbit"
   },
   "combined": {
-    "type": "file",
+    "transport": "file",
     "filename": "combined.log"
   }
 }
