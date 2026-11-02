@@ -4,6 +4,7 @@ process.env.OTEL_TRACES_EXPORTER = 'console'
 process.env.OTEL_METRICS_EXPORTER = 'none'
 process.env.OTEL_TRACES_SAMPLER = 'always_off'
 process.env.OTEL_PROPAGATORS = 'tracecontext,baggage'
+process.env.OTEL_NODE_RESOURCE_DETECTORS = 'none'
 process.env.CSL_LOG_LEVEL = 'info'
 
 require('@opentelemetry/auto-instrumentations-node/register')
