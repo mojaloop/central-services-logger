@@ -4,5 +4,11 @@
     // Only use one of ["low": true, "moderate": true, "high": true, "critical": true]
     "moderate": true,
     "allowlist": [
+        /**
+            [11-03-2026] minimatch <11.0.1: potential DoS via globparts amplification (GHSA-g3hv-75wg-m249).
+            Transitive only, via minimatch@3.x (eslint/standard, eslint-plugin-*, replace, rimraf@3, standard-version).
+            No fixed release on the 3.x line, and minimatch@11 has a different API.
+        **/
+        "GHSA-g3hv-75wg-m249"
     ]
 }
