@@ -28,7 +28,7 @@
     "lint:fix": "npm run standard:fix",
     "test:functional": "true",
     "test:integration": "true",
-    "test:unit": "jest --testPathPattern=test/unit",
+    "test:unit": "jest --testPathPatterns=test/unit",
     "test:xunit": "jest --reporters=default --reporters=jest-junit",
     "test:coverage": "jest --coverage",
     "test:coverage-check": "jest --coverage",
@@ -37,8 +37,7 @@
     "dep:check": "ncu -e 2",
     "dep:update": "ncu -u",
     "release": "standard-version --no-verify --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'",
-    "snapshot": "standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'chore(snapshot): {{currentTag}}'",
-    "prepare": "husky || true"
+    "snapshot": "standard-version --no-verify --skip.changelog --prerelease snapshot --releaseCommitMessageFormat 'chore(snapshot): {{currentTag}}'"
   },
   "overrides": {
     "glob@>=9": "14.0.6",
@@ -59,7 +58,6 @@
     "@opentelemetry/auto-instrumentations-node": "^0.83.1",
     "@types/node": "26.6.6",
     "audit-ci": "^7.1.0",
-    "husky": "9.1.7",
     "jest": "^30.5.2",
     "jest-junit": "^17.0.0",
     "npm-check-updates": "23.1.1",
