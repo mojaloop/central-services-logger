@@ -89,9 +89,7 @@ const createMlLogger = () => {
       format.timestamp(),
       errorExpect()
     ),
-    transports,
-    exceptionHandlers: transports,
-    exitOnError: false
+    transports
   })
 
   // Modify Logger before export
