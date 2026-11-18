@@ -28,5 +28,7 @@
  ******/
 import { Logger as WinstonLogger } from 'winston'
 
-declare const Logger: WinstonLogger
+declare const Logger: WinstonLogger & {
+  finish(): Promise<void>
+}
 export = Logger

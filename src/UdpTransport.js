@@ -3,6 +3,7 @@ const stream = require('node:stream')
 const crypto = require('crypto')
 const winston = require('winston')
 const stringify = require('safe-stable-stringify')
+const { TRANSPORT_EVENTS } = require('./lib/constants')
 
 class UdpStream extends stream.Writable {
   constructor (config) {
@@ -100,5 +101,16 @@ module.exports = class UdpTransport extends winston.transports.Stream {
         ...config
       })
     })
+  }
+
+  log (info, callback) {
+    this._stream.write(info, error => error
+      ? this.emit(TRANSPORT_EVENTS.warn, error)
+      : this.emit(TRANSPORT_EVENTS.logged, info))
+    if (callback) callback()
+  }
+
+  _final (callback) {
+    this._stream.end(callback)
   }
 }

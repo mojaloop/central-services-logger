@@ -127,6 +127,73 @@ describe('UdpTransport', () => {
     })
   })
 
+  test('should finish only after the udp stream has sent every pending frame', (done) => {
+    const pendingSends = []
+    const socketSendStub = sinon.stub(dgram.Socket.prototype, 'send').callsFake((msg, port, host, callback) => {
+      pendingSends.push(callback)
+    })
+    const udpTransport = new UdpTransport()
+    let finished = false
+    udpTransport.once('finish', () => { finished = true })
+
+    udpTransport.log({ message: 'pending' })
+    udpTransport.end()
+
+    setImmediate(() => {
+      expect(pendingSends).toHaveLength(1)
+      expect(finished).toBe(false)
+      udpTransport.once('finish', () => {
+        socketSendStub.restore()
+        done()
+      })
+      pendingSends[0](null)
+    })
+  })
+
+  test('reports a record as logged once its datagram is sent', (done) => {
+    const pendingSends = []
+    const socketSendStub = sinon.stub(dgram.Socket.prototype, 'send').callsFake((msg, port, host, callback) => {
+      pendingSends.push(callback)
+    })
+    const udpTransport = new UdpTransport()
+    const record = { message: 'sent' }
+    const logged = []
+    udpTransport.on('logged', info => logged.push(info))
+
+    udpTransport.log(record, () => {})
+
+    setImmediate(() => {
+      expect(pendingSends).toHaveLength(1)
+      expect(logged).toHaveLength(0)
+      pendingSends[0](null)
+      setImmediate(() => {
+        expect(logged).toEqual([record])
+        socketSendStub.restore()
+        done()
+      })
+    })
+  })
+
+  test('reports a record that fails to send as a warning', (done) => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const udpTransport = new UdpTransport()
+    const originalBufferFrom = Buffer.from
+    Buffer.from = () => { throw new Error('Buffer error') }
+    const logged = jest.fn()
+    udpTransport.on('logged', logged)
+
+    udpTransport.once('warn', error => {
+      Buffer.from = originalBufferFrom
+      expect(error.message).toBe('Buffer error')
+      expect(logged).not.toHaveBeenCalled()
+      udpTransport._stream.once('error', () => setImmediate(() => {
+        consoleErrorSpy.mockRestore()
+        done()
+      }))
+    })
+    udpTransport.log({ message: 'unsendable' })
+  })
+
   test('should handle error thrown in _write catch block', (done) => {
     const udpTransport = new UdpTransport({ id: '00112233445566778899aabbccddeeff' })
 

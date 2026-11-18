@@ -93,6 +93,26 @@ You can also call the Logger.log method which directly calls the Winston log met
 
 By default, the Logger class is setup to log to the console only, with timestamps and colorized output.
 
+### Finishing before exit
+
+The logger adds no `uncaughtException` or `unhandledRejection` listener, so an
+uncaught exception ends the process as Node.js does. To write every pending
+record before the process exits, await `Logger.finish()` as the last step:
+
+```javascript
+process.on('uncaughtException', async (error) => {
+  Logger.error('uncaught exception', error)
+  await Logger.finish().catch(console.error)
+  process.exit(1)
+})
+```
+
+`Logger.finish()` ends every logger the package created, context loggers
+included, and resolves once their transports have written every record; the
+`http` transport waits for each response and sends a batch that is still
+waiting. It rejects if the transports make no progress for one second. A record
+logged after `finish()` is called is written to stderr.
+
 ## Auditing Dependencies
 
 We use `audit-ci` along with `npm audit` to check dependencies for node vulnerabilities, and keep track of resolved dependencies with an `audit-ci.jsonc` file.

@@ -40,6 +40,8 @@ const { customLevels, level, logTransport, transportFileOptions } = config
 const { allLevels } = require('./lib/constants')
 const UdpTransport = require('./UdpTransport')
 const ConsoleTransport = require('./ConsoleTransport')
+const HttpTransport = require('./HttpTransport')
+const { register } = require('./lib/finish')
 
 const customLevelsArr = customLevels.split(',').map(l => l.trim()).filter(Boolean)
 const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !customLevelsArr.includes(key)) : []
@@ -69,8 +71,7 @@ const errorExpect = format(info => {
 const transportsMap = {
   console: ConsoleTransport,
   file: winstonTransports.File,
-  http: winstonTransports.Http,
-  stream: winstonTransports.Stream,
+  http: HttpTransport,
   udp: UdpTransport
 }
 
@@ -91,6 +92,7 @@ const createMlLogger = () => {
     ),
     transports
   })
+  register(Logger)
 
   // Modify Logger before export
   ignoredLevels.forEach(level => { Logger[level] = () => {} })
