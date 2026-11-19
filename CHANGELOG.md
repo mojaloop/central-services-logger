@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [12.0.0](https://github.com/mojaloop/central-services-logger/compare/v11.10.7...v12.0.0) (2026-11-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* add Logger.finish(), and let uncaught exceptions end the process (#89)
+
+### Features
+
+* add Logger.finish(), and let uncaught exceptions end the process ([#89](https://github.com/mojaloop/central-services-logger/issues/89)) ([86f8088](https://github.com/mojaloop/central-services-logger/commit/86f808876ed26ba8baa768b7cb2481b09467b5ca))
+
 ### [11.10.7](https://github.com/mojaloop/central-services-logger/compare/v11.10.6...v11.10.7) (2026-10-10)
 
 
