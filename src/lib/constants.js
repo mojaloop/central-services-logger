@@ -45,9 +45,15 @@ const SENSITIVE_VALUE_PATTERNS = Object.freeze([
   /\bBearer\s+[A-Za-z0-9\-._~+/]+=*\b/i
 ])
 
+const TRANSPORT_EVENTS = Object.freeze({
+  logged: 'logged',
+  warn: 'warn'
+})
+
 module.exports = {
   allLevels,
   SENSITIVE_SUBSTRINGS,
   SENSITIVE_VALUE_PATTERNS,
-  SENSITIVE_KEY_EXCLUSIONS
+  SENSITIVE_KEY_EXCLUSIONS,
+  TRANSPORT_EVENTS
 }

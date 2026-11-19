@@ -33,13 +33,16 @@
 'use strict'
 
 const { propagation } = require('@opentelemetry/api')
-const { createLogger, format, transports: winstonTransports } = require('winston')
+const { createLogger, format } = require('winston')
 const { LEVEL } = require('triple-beam')
 const config = require('./lib/config')
 const { customLevels, level, logTransport, transportFileOptions } = config
 const { allLevels } = require('./lib/constants')
 const UdpTransport = require('./UdpTransport')
 const ConsoleTransport = require('./ConsoleTransport')
+const FileTransport = require('./FileTransport')
+const HttpTransport = require('./HttpTransport')
+const { register } = require('./lib/finish')
 
 const customLevelsArr = customLevels.split(',').map(l => l.trim()).filter(Boolean)
 const ignoredLevels = customLevels ? Object.keys(allLevels).filter(key => !customLevelsArr.includes(key)) : []
@@ -68,16 +71,15 @@ const errorExpect = format(info => {
 
 const transportsMap = {
   console: ConsoleTransport,
-  file: winstonTransports.File,
-  http: winstonTransports.Http,
-  stream: winstonTransports.Stream,
+  file: FileTransport,
+  http: HttpTransport,
   udp: UdpTransport
 }
 
 const createMlLogger = () => {
   let transports
   if (logTransport === 'file') {
-    transports = [new winstonTransports.File(transportFileOptions)]
+    transports = [new FileTransport(transportFileOptions)]
   } else if (typeof logTransport === 'object') {
     transports = Object.entries(logTransport).map(([name, { transport = name, ...config }]) => new transportsMap[transport](config))
   } else transports = [new ConsoleTransport()]
@@ -89,10 +91,9 @@ const createMlLogger = () => {
       format.timestamp(),
       errorExpect()
     ),
-    transports,
-    exceptionHandlers: transports,
-    exitOnError: false
+    transports
   })
+  register(Logger)
 
   // Modify Logger before export
   ignoredLevels.forEach(level => { Logger[level] = () => {} })

@@ -33,7 +33,9 @@
 'use strict'
 
 const createMlLogger = require('./createMlLogger')
+const { finish } = require('./lib/finish')
 
 const Logger = createMlLogger()
+Logger.finish = finish
 
 module.exports = Logger

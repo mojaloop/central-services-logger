@@ -26,19 +26,21 @@ Edit the file in `./config/default.json` to configure the logger, or set the fol
 
 The `CSL_LOG_TRANSPORT` environment variable can be set to a JSON object to
 configure multiple transports. The key names can be any string, and the values
-should be objects that contain the transport type and configuration, e.g.:
+should be objects that contain the transport type and configuration. The
+`transport` field selects the type (`console`, `file`, `http` or `udp`); when it
+is absent, the key name is used as the type, e.g.:
 
 ```json
 {
   "stdout": {
-    "type": "console"
+    "transport": "console"
   },
   "fluentbit": {
-    "type": "udp",
+    "transport": "udp",
     "host": "fluentbit"
   },
   "combined": {
-    "type": "file",
+    "transport": "file",
     "filename": "combined.log"
   }
 }
@@ -92,6 +94,26 @@ Logger.info('test message %s', 'my string');
 You can also call the Logger.log method which directly calls the Winston log method and gives even more flexibility.
 
 By default, the Logger class is setup to log to the console only, with timestamps and colorized output.
+
+### Finishing before exit
+
+The logger adds no `uncaughtException` or `unhandledRejection` listener, so an
+uncaught exception ends the process as Node.js does. To write every pending
+record before the process exits, await `Logger.finish()` as the last step:
+
+```javascript
+process.on('uncaughtException', async (error) => {
+  Logger.error('uncaught exception', error)
+  await Logger.finish().catch(console.error)
+  process.exit(1)
+})
+```
+
+`Logger.finish()` ends every logger the package created, context loggers
+included, and resolves once their transports have written every record; the
+`http` transport waits for each response and sends a batch that is still
+waiting. It rejects if the transports make no progress for one second. A record
+logged after `finish()` is called is written to stderr.
 
 ## Auditing Dependencies
 
