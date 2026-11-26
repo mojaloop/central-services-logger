@@ -3,7 +3,5 @@
     // audit-ci supports reading JSON, JSONC, and JSON5 config files.
     // Only use one of ["low": true, "moderate": true, "high": true, "critical": true]
     "moderate": true,
-    "allowlist": [
-        "GHSA-fc5q-39xc-vjpf" // picomatch <=4.0.7 ReDoS, no patched release yet (micromatch/picomatch#194). Dev-only: jest and @parcel/watcher. Remove once a fixed picomatch is published.
-    ]
+    "allowlist": []
 }
